@@ -173,33 +173,37 @@ const UIManager = {
   renderCommentInlineGuide(container, subreddit, evaluation, settings, isCommentAllowed, accountInfo) {
     if (!container) return;
 
-    // Use a unique key to link guide to this container
+    // 1. Clean up any orphaned inline guides globally
+    document.querySelectorAll('.rs-comment-inline-guide').forEach(g => {
+      // If a guide's previous sibling is NOT a known comment area, it's an orphan
+      const prev = g.previousElementSibling;
+      const isKnownContainer = prev && (
+        prev.matches('shreddit-composer, shreddit-comment-tree, [bundlename*="comment"], .commentarea, form') || 
+        prev.querySelector('[placeholder]') || 
+        prev.hasAttribute('placeholder')
+      );
+      // Don't delete the floating fallback guide itself
+      if (!isKnownContainer && g.parentElement && g.id !== 'rs-floating-comment-guide') {
+        g.remove();
+      }
+    });
+
     const guideId = 'rs-guide-' + (container.id || Math.random().toString(36).substr(2, 6));
 
-    // Check if this container already has a guide
-    let guide = container.dataset.rsGuideId
-      ? document.getElementById(container.dataset.rsGuideId)
-      : null;
-
-    // Also check if container IS the guide (for floating guide case)
+    // 2. Strictly check if the IMMEDIATE next sibling is our guide
+    let guide = null;
     if (container.id === 'rs-floating-comment-guide') {
       guide = container;
-      if (!guide.querySelector('.rs-comment-inline-guide')) {
+      if (!guide.querySelector('.rs-comment-inline-guide-inner')) {
         const inner = document.createElement('div');
-        inner.className = 'rs-comment-inline-guide';
+        inner.className = 'rs-comment-inline-guide-inner';
         guide.appendChild(inner);
       }
-      guide = guide.querySelector('.rs-comment-inline-guide');
-    }
-
-    if (!guide) {
-      // Check if this container or its nearby sibling/parent already has an inline guide to prevent duplicates
-      const existingNear = container.parentElement?.querySelector('.rs-comment-inline-guide') ||
-                           container.querySelector?.('.rs-comment-inline-guide') ||
-                           (container.nextElementSibling?.classList?.contains('rs-comment-inline-guide') ? container.nextElementSibling : null);
-      if (existingNear) {
-        guide = existingNear;
-        container.dataset.rsGuideId = guide.id || guideId;
+      guide = guide.querySelector('.rs-comment-inline-guide-inner');
+    } else {
+      const nextSibling = container.nextElementSibling;
+      if (nextSibling && nextSibling.classList.contains('rs-comment-inline-guide')) {
+        guide = nextSibling;
       }
     }
 
@@ -207,15 +211,13 @@ const UIManager = {
       guide = document.createElement('div');
       guide.className = 'rs-comment-inline-guide';
       guide.id = guideId;
-      container.dataset.rsGuideId = guideId;
 
-      // Insert AFTER the container as a sibling (not inside it)
+      // Insert strictly AFTER the container as a sibling
       if (container.nextSibling) {
         container.parentNode.insertBefore(guide, container.nextSibling);
       } else if (container.parentNode) {
         container.parentNode.appendChild(guide);
       } else {
-        // Container has no parent — likely detached; append to body as last resort
         document.body.appendChild(guide);
       }
     }
