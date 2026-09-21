@@ -37,7 +37,16 @@ html.rs-scrolling-only faceplate-tracker[noun="save"],
 html.rs-scrolling-only span:has(> button[aria-label*="upvote" i]),
 html.rs-scrolling-only span:has(> button[aria-label*="downvote" i]),
 html.rs-scrolling-only span:has(> button[aria-label*="share" i]),
-html.rs-scrolling-only shreddit-comment-action-row {
+html.rs-scrolling-only shreddit-comment-action-row,
+/* New classes and attributes from Shreddit inspect element */
+html.rs-scrolling-only shreddit-vote-animations,
+html.rs-scrolling-only .rpl-vote-button-group,
+html.rs-scrolling-only button[data-action-bar-action="upvote"],
+html.rs-scrolling-only button[data-action-bar-action="downvote"],
+html.rs-scrolling-only button[data-action-bar-action="comments"],
+html.rs-scrolling-only button[data-action-bar-action="share"],
+html.rs-scrolling-only button[data-post-click-location="comments-button"],
+html.rs-scrolling-only button[data-post-click-location="vote"] {
   display: none !important;
   pointer-events: none !important;
   opacity: 0 !important;
