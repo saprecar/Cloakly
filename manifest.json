@@ -40,6 +40,16 @@
         "*://*.reddit.com/*",
         "*://reddit.com/*"
       ],
+      "js": [
+        "content/blocker.js"
+      ],
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "*://*.reddit.com/*",
+        "*://reddit.com/*"
+      ],
       "css": [
         "styles/blur.css",
         "styles/warning.css"

@@ -23,6 +23,7 @@ const DEFAULT_SETTINGS = {
   allowPostCreation: true,
   allowCommentCreation: true,
   postFilters: [], // Array of { id, subreddit, keyword }
+  blockedSubreddits: [], // Array of strings (e.g., 'news', 'gaming')
 
   // Manual Profile Overrides (for reliable checker testing/usage)
   useManualProfile: false,

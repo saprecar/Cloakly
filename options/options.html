@@ -179,7 +179,26 @@
           </div>
           
           <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 24px;">
-            <h4 style="margin-top: 0; margin-bottom: 12px; font-size: 13px; color: var(--text);">Create New Rule</h4>
+            <h4 style="margin-top: 0; margin-bottom: 12px; font-size: 13px; color: var(--text);">Block Subreddit Entirely</h4>
+            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">Prevent the current profile from visiting specific subreddits entirely.</p>
+            
+            <div class="setting-row" style="margin-bottom: 16px;">
+              <div class="setting-info">
+                <label for="newBlockedSubreddit">Subreddit to Block</label>
+              </div>
+              <input type="text" id="newBlockedSubreddit" placeholder="e.g. news" class="text-input" style="width: 250px;">
+            </div>
+
+            <button type="button" class="btn btn-action" id="btnBlockSubreddit">Block Subreddit</button>
+          </div>
+
+          <h4 style="margin-top: 0; margin-bottom: 12px; font-size: 13px; color: var(--text);">Blocked Subreddits</h4>
+          <div class="cache-list" id="blockedListContainer" style="margin-bottom: 32px;">
+            <!-- Populated via JS -->
+          </div>
+
+          <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+            <h4 style="margin-top: 0; margin-bottom: 12px; font-size: 13px; color: var(--text);">Create New Feed Rule</h4>
             
             <div class="setting-row" style="margin-bottom: 12px;">
               <div class="setting-info">

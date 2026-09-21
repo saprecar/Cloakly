@@ -58,6 +58,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderRuleCache();
       } else if (tabId === 'tab-filtering') {
         renderFilters();
+        renderBlockedSubreddits();
       }
     });
   });
@@ -70,6 +71,57 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnAddFilter = document.getElementById('btnAddFilter');
   const newFilterSubreddit = document.getElementById('newFilterSubreddit');
   const newFilterKeyword = document.getElementById('newFilterKeyword');
+  
+  // Subreddit Blocker Management
+  const blockedListContainer = document.getElementById('blockedListContainer');
+  const btnBlockSubreddit = document.getElementById('btnBlockSubreddit');
+  const newBlockedSubreddit = document.getElementById('newBlockedSubreddit');
+
+  async function renderBlockedSubreddits() {
+    if (!blockedListContainer) return;
+    const blocked = settings.blockedSubreddits || [];
+
+    if (blocked.length === 0) {
+      blockedListContainer.innerHTML = '<div class="empty-state">No subreddits are blocked.</div>';
+      return;
+    }
+
+    blockedListContainer.innerHTML = blocked.map(sub => `
+      <div class="cache-card" style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <div class="cache-sub-title">r/${sub}</div>
+        </div>
+        <button class="btn btn-danger btn-delete-blocked" data-sub="${sub}" style="padding: 4px 8px; font-size: 11px;">Unblock</button>
+      </div>
+    `).join('');
+
+    document.querySelectorAll('.btn-delete-blocked').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const subToRemove = e.target.getAttribute('data-sub');
+        settings.blockedSubreddits = settings.blockedSubreddits.filter(s => s !== subToRemove);
+        await StorageManager.updateSettings({ blockedSubreddits: settings.blockedSubreddits });
+        renderBlockedSubreddits();
+        showSaveFeedback();
+      });
+    });
+  }
+
+  if (btnBlockSubreddit) {
+    btnBlockSubreddit.addEventListener('click', async () => {
+      let sub = newBlockedSubreddit.value.trim().toLowerCase().replace(/^r\//, '');
+      if (!sub) return;
+
+      if (!settings.blockedSubreddits) settings.blockedSubreddits = [];
+      if (!settings.blockedSubreddits.includes(sub)) {
+        settings.blockedSubreddits.push(sub);
+        await StorageManager.updateSettings({ blockedSubreddits: settings.blockedSubreddits });
+      }
+
+      newBlockedSubreddit.value = '';
+      renderBlockedSubreddits();
+      showSaveFeedback();
+    });
+  }
 
   async function renderFilters() {
     if (!filterListContainer) return;
