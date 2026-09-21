@@ -197,6 +197,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  const checkboxes = [
+    'nsfwProtection',
+    'spoilerProtection',
+    'autoRevealNative',
+    'postCheckEnabled',
+    'commentCheckEnabled'
+  ];
+
   checkboxes.forEach(id => {
     const el = document.getElementById(id);
     if (el) {
