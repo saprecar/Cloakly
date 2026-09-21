@@ -4,12 +4,14 @@ A powerful browser extension designed to enhance your Reddit experience by givin
 
 ## Features
 
+- **Multi-Account Profiles:** Settings are saved on a per-account basis. When you switch Reddit accounts, your personalized safety configurations switch with you instantly.
+- **Explore Mode (Read-Only):** Aggressively blocks and hides all interaction buttons (Upvote, Downvote, Comment, Share) to prevent accidental engagement while scrolling.
+- **Granular Interaction Blocks:** Lock down your account by individually allowing or blocking Post Creation and Comment Creation.
+- **Pre-Submission Safety Checker:** Checks community rules, Account Age, and Karma requirements *before* you post or comment, warning you of potential rejections.
+- **Shadowban & Ghosting Detector:** Automatically checks if your account is shadowbanned, and detects if your posts were silently ghosted (removed) by Reddit filters.
+- **Feed Filters & Subreddit Blocker:** Dynamically hide posts containing specific keywords, or completely block access to specific subreddits (redirects you to a safe page).
 - **Custom Content Blurring:** Toggle blurs for NSFW and Spoiler posts individually.
-- **Auto-Reveal Native Blurs:** Automatically unblur Reddit's native NSFW and Spoiler images as you scroll (bypasses Reddit's strict click blocks!).
-- **User Account Detection:** Automatically detects and displays your account age and Karma for quick reference.
-- **Posting Safety:** Warns you before posting in a subreddit if you don't meet their Karma or Account Age requirements.
-- **Shadowban Detector:** Automatically checks and warns you if your account has been silently shadowbanned by Reddit.
-- **Post Hider (Feed Filters):** Dynamically curates your home feed. Hide posts as you scroll by matching specific subreddits, keywords, or a combination of both.
+- **Auto-Reveal Native Blurs:** Automatically unblur Reddit's native NSFW and Spoiler images as you scroll, bypassing Reddit's strict click blocks.
 - **Account Nuke / Cleaner:** Permanently wipes your account history (Posts, Comments, Saved items, Upvotes, Downvotes) based on custom time ranges (Last hour, 24h, 7d, 30d, 1y, or custom dates).
 
 ## Credits & Acknowledgements
