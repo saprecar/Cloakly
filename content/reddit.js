@@ -132,6 +132,7 @@
   // Listen for storage changes or popup messages
   browserAPI.storage.onChanged.addListener(async () => {
     currentSettings = await StorageManager.getSettings();
+    document.dispatchEvent(new CustomEvent('rs-settings-update', { detail: currentSettings }));
     PostChecker.updateSettings(currentSettings);
     runScan();
   });

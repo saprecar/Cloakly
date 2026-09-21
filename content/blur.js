@@ -13,34 +13,8 @@ const BlurManager = {
     // If user already revealed this post, do not blur any newly loaded images in it (e.g. galleries)
     if (postEl.dataset.rsTemporarilyRevealed === 'true' && !settings.keepRevealed) return;
 
-    // --- AUTO-REVEAL NATIVE BLURS LOGIC (WEB COMPONENT BYPASS) ---
-    if (settings.autoRevealNative) {
-      const nativeBlurContainers = RedditDetector.queryDeepAll('shreddit-blurred-container, devvit2-blur-gate, community-highlight-card, .nsfw-prompt, .blur-overlay', postEl);
-      if (nativeBlurContainers.length > 0) {
-        
-        // Ensure the inject script is loaded once
-        if (!document.getElementById('rs-inject-script')) {
-          const s = document.createElement('script');
-          s.id = 'rs-inject-script';
-          // Need to use chrome.runtime.getURL (or browserAPI if available)
-          s.src = (typeof browserAPI !== 'undefined' ? browserAPI.runtime.getURL : chrome.runtime.getURL)('content/inject-reveal.js');
-          (document.head || document.documentElement).appendChild(s);
-        }
-
-        nativeBlurContainers.forEach(container => {
-           // Assign a unique ID to find this exact container in the main world
-           const uniqueId = 'rs-blur-' + Math.random().toString(36).substr(2, 9);
-           container.setAttribute('data-rs-auto-id', uniqueId);
-           
-           // Dispatch event to the injected script
-           document.dispatchEvent(new CustomEvent('rs-reveal-native', { detail: { id: uniqueId } }));
-        });
-
-        postEl.dataset.rsTemporarilyRevealed = 'true';
-        return; // Extension blur bypassed!
-      }
-    }
-    // ----------------------------------------------------------------
+    // --- AUTO-REVEAL NATIVE BLURS LOGIC ---
+    // DELEGATED to content/auto-reveal.js which runs in the MAIN world.
     // --------------------------------------
 
     const { isNSFW, isSpoiler } = RedditDetector.getPostFlags(postEl);

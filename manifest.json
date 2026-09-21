@@ -69,6 +69,17 @@
         "content/reddit.js"
       ],
       "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://*.reddit.com/*",
+        "*://reddit.com/*"
+      ],
+      "js": [
+        "content/auto-reveal.js"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN"
     }
   ],
   "action": {
@@ -81,16 +92,5 @@
       "128": "icons/icon128.png"
     }
   },
-  "options_page": "options/options.html",
-  "web_accessible_resources": [
-    {
-      "resources": [
-        "content/inject-reveal.js"
-      ],
-      "matches": [
-        "*://*.reddit.com/*",
-        "*://reddit.com/*"
-      ]
-    }
-  ]
+  "options_page": "options/options.html"
 }
