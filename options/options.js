@@ -17,6 +17,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       title: 'Browsing Protection',
       desc: 'Configure local media blur and sensitive content filtering preferences.'
     },
+    'tab-filtering': {
+      title: 'Feed Filters & Post Hiding',
+      desc: 'Dynamically hide posts as you scroll based on subreddits and keywords.'
+    },
     'tab-posting': {
       title: 'Posting & Commenting Safety',
       desc: 'Set pre-submission requirements checking and safety controls.'
@@ -52,12 +56,83 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (tabId === 'tab-cache') {
         renderRuleCache();
+      } else if (tabId === 'tab-filtering') {
+        renderFilters();
       }
     });
   });
 
   // Fetch current settings
   let settings = await StorageManager.getSettings();
+
+  // Filter Rules Management
+  const filterListContainer = document.getElementById('filterListContainer');
+  const btnAddFilter = document.getElementById('btnAddFilter');
+  const newFilterSubreddit = document.getElementById('newFilterSubreddit');
+  const newFilterKeyword = document.getElementById('newFilterKeyword');
+
+  async function renderFilters() {
+    if (!filterListContainer) return;
+    const filters = settings.postFilters || [];
+    
+    if (filters.length === 0) {
+      filterListContainer.innerHTML = '<div class="empty-state">No filter rules created yet. Add one above.</div>';
+      return;
+    }
+
+    filterListContainer.innerHTML = filters.map(f => {
+      const subText = f.subreddit ? `<b>r/${f.subreddit}</b>` : '<i>All Subreddits</i>';
+      const keyText = f.keyword ? `<b>"${f.keyword}"</b>` : '<i>Any Keyword</i>';
+      return `
+        <div class="cache-card" style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div class="cache-sub-title">Hide posts if:</div>
+            <div class="cache-rules-preview" style="margin-top: 4px;">
+              Subreddit is ${subText} AND text contains ${keyText}
+            </div>
+          </div>
+          <button class="btn btn-danger btn-delete-filter" data-id="${f.id}" style="padding: 4px 8px; font-size: 11px;">Delete</button>
+        </div>
+      `;
+    }).join('');
+
+    document.querySelectorAll('.btn-delete-filter').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const idToRemove = e.target.getAttribute('data-id');
+        settings.postFilters = settings.postFilters.filter(f => f.id !== idToRemove);
+        await StorageManager.updateSettings({ postFilters: settings.postFilters });
+        renderFilters();
+        showSaveFeedback();
+      });
+    });
+  }
+
+  if (btnAddFilter) {
+    btnAddFilter.addEventListener('click', async () => {
+      const sub = newFilterSubreddit.value.trim().toLowerCase().replace(/^r\//, '');
+      const keyword = newFilterKeyword.value.trim().toLowerCase();
+
+      if (!sub && !keyword) {
+        alert('Please enter a subreddit, a keyword, or both.');
+        return;
+      }
+
+      if (!settings.postFilters) settings.postFilters = [];
+      
+      settings.postFilters.push({
+        id: Date.now().toString(),
+        subreddit: sub,
+        keyword: keyword
+      });
+
+      await StorageManager.updateSettings({ postFilters: settings.postFilters });
+      
+      newFilterSubreddit.value = '';
+      newFilterKeyword.value = '';
+      renderFilters();
+      showSaveFeedback();
+    });
+  }
 
   // Helper to trigger save feedback toast
   function showSaveFeedback() {

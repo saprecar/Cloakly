@@ -22,6 +22,7 @@ const DEFAULT_SETTINGS = {
   commentCheckEnabled: true,
   allowPostCreation: true,
   allowCommentCreation: true,
+  postFilters: [], // Array of { id, subreddit, keyword }
 
   // Manual Profile Overrides (for reliable checker testing/usage)
   useManualProfile: false,

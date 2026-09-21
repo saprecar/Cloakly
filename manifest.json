@@ -53,6 +53,7 @@
         "content/detector.js",
         "content/ui.js",
         "content/blur.js",
+        "content/filter.js",
         "content/post-checker.js",
         "content/reddit.js"
       ],

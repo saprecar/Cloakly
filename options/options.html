@@ -26,6 +26,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           Browsing Protection
         </button>
+        <button class="nav-item" data-tab="tab-filtering">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+          Content Filtering
+        </button>
         <button class="nav-item" data-tab="tab-posting">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           Posting & Commenting
@@ -166,7 +170,44 @@
         </div>
       </section>
 
-      <!-- TAB 2: Posting & Commenting -->
+      <!-- TAB 2: Content Filtering -->
+      <section class="tab-panel" id="tab-filtering">
+        <div class="card">
+          <div class="card-header">
+            <h3>Feed Filters & Post Hiding</h3>
+            <p>Dynamically hide posts as you scroll based on subreddits and keywords.</p>
+          </div>
+          
+          <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+            <h4 style="margin-top: 0; margin-bottom: 12px; font-size: 13px; color: var(--text);">Create New Rule</h4>
+            
+            <div class="setting-row" style="margin-bottom: 12px;">
+              <div class="setting-info">
+                <label for="newFilterSubreddit">Target Subreddit (Optional)</label>
+                <span class="setting-desc">e.g. `news, politics`. Leave blank for all subreddits.</span>
+              </div>
+              <input type="text" id="newFilterSubreddit" placeholder="e.g. news" class="text-input" style="width: 250px;">
+            </div>
+
+            <div class="setting-row" style="margin-bottom: 16px;">
+              <div class="setting-info">
+                <label for="newFilterKeyword">Target Keyword (Optional)</label>
+                <span class="setting-desc">e.g. `election`. Posts with this word will be hidden.</span>
+              </div>
+              <input type="text" id="newFilterKeyword" placeholder="e.g. election" class="text-input" style="width: 250px;">
+            </div>
+
+            <button type="button" class="btn btn-action" id="btnAddFilter">Add Filter Rule</button>
+          </div>
+
+          <h4 style="margin-top: 0; margin-bottom: 12px; font-size: 13px; color: var(--text);">Active Filter Rules</h4>
+          <div class="cache-list" id="filterListContainer">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: Posting & Commenting -->
       <section class="tab-panel" id="tab-posting">
         <div class="card">
           <div class="card-header">

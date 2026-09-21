@@ -11,6 +11,7 @@
 
   // Run initial scan & checks
   function runScan() {
+    if (typeof FilterManager !== 'undefined') FilterManager.scanAndApply(currentSettings);
     BlurManager.scanAndApply(currentSettings);
     PostChecker.init(currentSettings);
     PostChecker.checkStealthRemoval();
