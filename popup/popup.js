@@ -161,10 +161,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     'popupSpoilerProtection': 'spoilerProtection',
     'popupAutoRevealNative': 'autoRevealNative',
     'popupPostCheckEnabled': 'postCheckEnabled',
-    'popupAllowPostCreation': 'allowPostCreation',
-    'popupCommentCheckEnabled': 'commentCheckEnabled',
-    'popupAllowCommentCreation': 'allowCommentCreation',
-    'popupScrollingOnlyMode': 'scrollingOnlyMode'
+    'popupCommentCheckEnabled': 'commentCheckEnabled'
   };
 
   const nsfwEl = document.getElementById('popupNsfwProtection') || document.getElementById('nsfwProtection');
@@ -228,17 +225,66 @@ document.addEventListener('DOMContentLoaded', async () => {
   const protWarning = document.getElementById('protWarning');
   const protStrict = document.getElementById('protStrict');
 
-  if (settings.protectionLevel === 'strict') {
-    protStrict.checked = true;
-  } else {
-    protWarning.checked = true;
+  if (protWarning && protStrict) {
+    if (settings.protectionLevel === 'strict') {
+      protStrict.checked = true;
+    } else {
+      protWarning.checked = true;
+    }
+  }
+
+  const btnExplore = document.getElementById('btnScrollingOnlyMode');
+  const btnPost = document.getElementById('btnAllowPostCreation');
+  const btnComment = document.getElementById('btnAllowCommentCreation');
+
+  function updateBtn(btn, isBlocked) {
+    if (!btn) return;
+    if (isBlocked) {
+      btn.textContent = 'BLOCKED';
+      btn.className = 'status-btn blocked';
+    } else {
+      btn.textContent = 'UNLOCKED';
+      btn.className = 'status-btn unlocked';
+    }
+  }
+
+  if (btnExplore) {
+    updateBtn(btnExplore, settings.scrollingOnlyMode);
+    btnExplore.onclick = async () => {
+      const newVal = !settings.scrollingOnlyMode;
+      await StorageManager.updateSettings({ scrollingOnlyMode: newVal });
+      settings.scrollingOnlyMode = newVal;
+      updateBtn(btnExplore, newVal);
+    };
+  }
+
+  if (btnPost) {
+    updateBtn(btnPost, !settings.allowPostCreation);
+    btnPost.onclick = async () => {
+      const newVal = !settings.allowPostCreation;
+      await StorageManager.updateSettings({ allowPostCreation: newVal });
+      settings.allowPostCreation = newVal;
+      updateBtn(btnPost, !newVal);
+    };
+  }
+
+  if (btnComment) {
+    updateBtn(btnComment, !settings.allowCommentCreation);
+    btnComment.onclick = async () => {
+      const newVal = !settings.allowCommentCreation;
+      await StorageManager.updateSettings({ allowCommentCreation: newVal });
+      settings.allowCommentCreation = newVal;
+      updateBtn(btnComment, !newVal);
+    };
   }
 
   [protWarning, protStrict].forEach(radio => {
-    radio.addEventListener('change', async () => {
-      const val = protStrict.checked ? 'strict' : 'warning';
-      await StorageManager.updateSettings({ protectionLevel: val });
-    });
+    if (radio) {
+      radio.addEventListener('change', async () => {
+        const val = protStrict.checked ? 'strict' : 'warning';
+        await StorageManager.updateSettings({ protectionLevel: val });
+      });
+    }
   });
 
   // Temporary Overrides (10 min = 600,000 ms)
