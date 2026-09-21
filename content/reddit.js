@@ -18,8 +18,40 @@
     
     if (currentSettings.scrollingOnlyMode) {
       document.documentElement.classList.add('rs-scrolling-only');
+      
+      // Aggressive JS Fallback (Pierces shadow DOM and overrides inline styles)
+      const actionRows = [
+        ...document.querySelectorAll('[data-testid="action-row"], shreddit-post-action-row, button[data-action-bar-action], .rpl-vote-button-group')
+      ];
+      // Also check inside shreddit-post shadow roots
+      document.querySelectorAll('shreddit-post').forEach(post => {
+        if (post.shadowRoot) {
+          actionRows.push(...post.shadowRoot.querySelectorAll('[data-testid="action-row"], shreddit-post-action-row, button[data-action-bar-action], .rpl-vote-button-group'));
+        }
+      });
+      actionRows.forEach(row => {
+        if (row && row.style) {
+          row.style.setProperty('display', 'none', 'important');
+        }
+      });
+      
     } else {
       document.documentElement.classList.remove('rs-scrolling-only');
+      
+      // Restore JS hidden elements
+      const actionRows = [
+        ...document.querySelectorAll('[data-testid="action-row"], shreddit-post-action-row, button[data-action-bar-action], .rpl-vote-button-group')
+      ];
+      document.querySelectorAll('shreddit-post').forEach(post => {
+        if (post.shadowRoot) {
+          actionRows.push(...post.shadowRoot.querySelectorAll('[data-testid="action-row"], shreddit-post-action-row, button[data-action-bar-action], .rpl-vote-button-group'));
+        }
+      });
+      actionRows.forEach(row => {
+        if (row && row.style && row.style.display === 'none') {
+          row.style.removeProperty('display');
+        }
+      });
     }
   }
 
