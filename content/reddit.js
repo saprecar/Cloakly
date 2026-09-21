@@ -17,6 +17,12 @@
     PostChecker.init(currentSettings);
     PostChecker.checkStealthRemoval();
     
+    if (currentSettings.blockPostCreation) {
+      document.documentElement.classList.add('rs-block-post-creation');
+    } else {
+      document.documentElement.classList.remove('rs-block-post-creation');
+    }
+
     if (currentSettings.scrollingOnlyMode) {
       document.documentElement.classList.add('rs-scrolling-only');
       

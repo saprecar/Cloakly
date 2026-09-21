@@ -54,3 +54,22 @@ html.rs-scrolling-only shreddit-post-action-row {
   opacity: 0 !important;
   visibility: hidden !important;
 }
+
+/* 
+ * Hide 'Create Post' buttons 
+ * Active if Explore Mode (rs-scrolling-only) OR Block Post Creation (rs-block-post-creation) is enabled
+ */
+html.rs-scrolling-only a[href*="/submit"],
+html.rs-block-post-creation a[href*="/submit"],
+html.rs-scrolling-only faceplate-tracker[noun="create_post"],
+html.rs-block-post-creation faceplate-tracker[noun="create_post"],
+html.rs-scrolling-only a[aria-label*="Create Post" i],
+html.rs-block-post-creation a[aria-label*="Create Post" i],
+html.rs-scrolling-only shreddit-sidebar-create-post-button,
+html.rs-block-post-creation shreddit-sidebar-create-post-button,
+html.rs-scrolling-only faceplate-tracker[noun="create_post_button"],
+html.rs-block-post-creation faceplate-tracker[noun="create_post_button"] {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
