@@ -2,37 +2,44 @@
 
 /* 
  * These rules are aggressively applied when the user enables "Scrolling Only Mode".
- * The extension adds the 'rs-scrolling-only' class to the body tag.
+ * The extension adds the 'rs-scrolling-only' class to the html tag.
  */
 
-body.rs-scrolling-only shreddit-post-share-button,
-body.rs-scrolling-only shreddit-comment-share-button,
-body.rs-scrolling-only shreddit-post-overflow-menu,
-body.rs-scrolling-only shreddit-comment-overflow-menu,
-body.rs-scrolling-only shreddit-post-comment-button,
-body.rs-scrolling-only shreddit-composer,
-body.rs-scrolling-only shreddit-post-composer,
-body.rs-scrolling-only button[upvote],
-body.rs-scrolling-only button[downvote],
-body.rs-scrolling-only button[data-click-id="upvote"],
-body.rs-scrolling-only button[data-click-id="downvote"],
-body.rs-scrolling-only faceplate-tracker[source="share"],
-body.rs-scrolling-only faceplate-tracker[source="post_action_menu"],
-body.rs-scrolling-only .icon-share,
-body.rs-scrolling-only .icon-comment,
-body.rs-scrolling-only [data-click-id="share"],
-body.rs-scrolling-only [data-click-id="save"],
-body.rs-scrolling-only button[aria-label*="upvote" i],
-body.rs-scrolling-only button[aria-label*="downvote" i],
-body.rs-scrolling-only button[aria-label*="reply" i],
-body.rs-scrolling-only button[aria-label*="share" i] {
+html.rs-scrolling-only shreddit-post-share-button,
+html.rs-scrolling-only shreddit-comment-share-button,
+html.rs-scrolling-only shreddit-post-overflow-menu,
+html.rs-scrolling-only shreddit-comment-overflow-menu,
+html.rs-scrolling-only shreddit-post-comment-button,
+html.rs-scrolling-only shreddit-composer,
+html.rs-scrolling-only shreddit-post-composer,
+html.rs-scrolling-only button[upvote],
+html.rs-scrolling-only button[downvote],
+html.rs-scrolling-only button[data-click-id="upvote"],
+html.rs-scrolling-only button[data-click-id="downvote"],
+html.rs-scrolling-only faceplate-tracker[source="share"],
+html.rs-scrolling-only faceplate-tracker[source="post_action_menu"],
+html.rs-scrolling-only .icon-share,
+html.rs-scrolling-only .icon-comment,
+html.rs-scrolling-only [data-click-id="share"],
+html.rs-scrolling-only [data-click-id="save"],
+html.rs-scrolling-only button[aria-label*="upvote" i],
+html.rs-scrolling-only button[aria-label*="downvote" i],
+html.rs-scrolling-only button[aria-label*="reply" i],
+html.rs-scrolling-only button[aria-label*="share" i],
+/* New shadow DOM / Action row elements */
+html.rs-scrolling-only shreddit-async-action-button,
+html.rs-scrolling-only faceplate-tracker[action="upvote"],
+html.rs-scrolling-only faceplate-tracker[action="downvote"],
+html.rs-scrolling-only faceplate-tracker[action="comment"],
+html.rs-scrolling-only faceplate-tracker[noun="comment"],
+html.rs-scrolling-only faceplate-tracker[noun="share"],
+html.rs-scrolling-only faceplate-tracker[noun="save"],
+html.rs-scrolling-only span:has(> button[aria-label*="upvote" i]),
+html.rs-scrolling-only span:has(> button[aria-label*="downvote" i]),
+html.rs-scrolling-only span:has(> button[aria-label*="share" i]),
+html.rs-scrolling-only shreddit-comment-action-row {
   display: none !important;
   pointer-events: none !important;
   opacity: 0 !important;
   visibility: hidden !important;
-}
-
-/* Also hide specific action bars completely if they don't have other content */
-body.rs-scrolling-only shreddit-comment-action-row {
-  display: none !important;
 }

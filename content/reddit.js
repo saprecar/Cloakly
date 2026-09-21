@@ -17,9 +17,9 @@
     PostChecker.checkStealthRemoval();
     
     if (currentSettings.scrollingOnlyMode) {
-      document.body.classList.add('rs-scrolling-only');
+      document.documentElement.classList.add('rs-scrolling-only');
     } else {
-      document.body.classList.remove('rs-scrolling-only');
+      document.documentElement.classList.remove('rs-scrolling-only');
     }
   }
 
