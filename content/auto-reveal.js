@@ -7,17 +7,8 @@
  */
 
 (function() {
-  let isEnabled = false;
-
-  // Listen for settings updates from the isolated content script
-  document.addEventListener('rs-settings-update', (e) => {
-    if (e.detail && typeof e.detail.autoRevealNative === 'boolean') {
-      isEnabled = e.detail.autoRevealNative;
-      if (isEnabled) unblurAll();
-    }
-  });
-
   function unblurAll() {
+    const isEnabled = document.documentElement.dataset.rsAutoReveal === 'true';
     if (!isEnabled) return;
     
     // 1. Shreddit native blur containers
@@ -41,7 +32,7 @@
     }
   }
 
-  // Observe for new elements
+  // Observe for new elements and state changes
   const observer = new MutationObserver(() => {
     unblurAll();
   });
@@ -49,7 +40,7 @@
   observer.observe(document.documentElement, {
     childList: true,
     subtree: true,
-    attributeFilter: ['blurred', 'reason']
+    attributeFilter: ['blurred', 'reason', 'data-rs-auto-reveal']
   });
 
 })();

@@ -8,7 +8,7 @@
 
   // Fetch initial stored settings
   let currentSettings = await StorageManager.getSettings();
-  document.dispatchEvent(new CustomEvent('rs-settings-update', { detail: currentSettings }));
+  document.documentElement.dataset.rsAutoReveal = currentSettings.autoRevealNative ? 'true' : 'false';
 
   // Run initial scan & checks
   function runScan() {
@@ -133,7 +133,7 @@
   // Listen for storage changes or popup messages
   browserAPI.storage.onChanged.addListener(async () => {
     currentSettings = await StorageManager.getSettings();
-    document.dispatchEvent(new CustomEvent('rs-settings-update', { detail: currentSettings }));
+    document.documentElement.dataset.rsAutoReveal = currentSettings.autoRevealNative ? 'true' : 'false';
     PostChecker.updateSettings(currentSettings);
     runScan();
   });
