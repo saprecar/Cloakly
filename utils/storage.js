@@ -31,6 +31,10 @@ const DEFAULT_SETTINGS = {
 
   // Auto-detected User Profile
   lastDetectedUser: null, // { username, accountAgeDays, combinedKarma, timestamp }
+  
+  // Account Health (Shadowban)
+  isShadowbanned: false,
+  lastShadowbanCheck: 0,
 
   // Temporary Overrides (Timestamps in ms)
   tempPostEnableUntil: 0,
@@ -60,6 +64,24 @@ const StorageManager = {
 
   async updateSettings(newSettings) {
     try {
+      // Check if username changed to safely reset shadowban cache
+      if (newSettings.lastDetectedUser || newSettings.manualUsername !== undefined || newSettings.useManualProfile !== undefined) {
+        const current = await browserAPI.storage.get(null);
+        const oldName = current.useManualProfile ? current.manualUsername : current.lastDetectedUser?.username;
+        
+        const newUseManual = newSettings.useManualProfile !== undefined ? newSettings.useManualProfile : current.useManualProfile;
+        const newManualName = newSettings.manualUsername !== undefined ? newSettings.manualUsername : current.manualUsername;
+        const newDetectedName = newSettings.lastDetectedUser ? newSettings.lastDetectedUser.username : current.lastDetectedUser?.username;
+        
+        const newName = newUseManual ? newManualName : newDetectedName;
+        
+        if (newName && oldName && newName !== oldName) {
+          newSettings.isShadowbanned = false;
+          newSettings.lastShadowbanCheck = 0;
+          console.log('[Reddit Safety] Username changed, resetting shadowban cache.');
+        }
+      }
+
       await browserAPI.storage.set(newSettings);
       return true;
     } catch (err) {

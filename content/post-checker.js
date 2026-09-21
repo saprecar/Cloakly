@@ -303,6 +303,55 @@ const PostChecker = {
         Logger.log('Floating guide inserted after main post content.');
       }
     }
+  },
+
+  /**
+   * Detects if the user's currently viewed post was silently removed (ghosted)
+   */
+  async checkStealthRemoval() {
+    if (!this.settings || !this.settings.lastDetectedUser?.username) return;
+    
+    // Only run on post detail pages
+    if (!window.location.pathname.includes('/comments/')) return;
+    
+    // Avoid double checking the same post on SPA navigations or infinite scroll
+    const postContainer = document.querySelector('shreddit-post') || document.querySelector('[data-testid="post-container"]');
+    if (postContainer && postContainer.dataset.rsStealthChecked === 'true') return;
+    if (postContainer) postContainer.dataset.rsStealthChecked = 'true';
+
+    try {
+      // Fetch post JSON without hitting API rate limits
+      const url = window.location.pathname + '.json';
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      if (!res.ok) return;
+
+      const data = await res.json();
+      const post = data[0]?.data?.children?.[0]?.data;
+      if (!post) return;
+
+      // Only warn if the user is the author
+      if (post.author !== this.settings.lastDetectedUser.username) return;
+
+      const isRemoved = post.removed_by_category || post.banned_by || post.spam || (post.is_robot_indexable === false && (post.removed || post.is_removed));
+      
+      if (isRemoved) {
+        Logger.log('Stealth removal detected for this post. Category:', post.removed_by_category);
+        
+        // Inject heavy warning banner at the top of the post
+        const banner = document.createElement('div');
+        banner.style.cssText = 'background: #ef4444; color: white; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-weight: bold; display: flex; align-items: center; gap: 8px; font-family: sans-serif; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); z-index: 1000; position: relative;';
+        const reason = post.removed_by_category ? `(Reason: ${post.removed_by_category})` : '';
+        banner.innerHTML = `<span style="font-size: 20px;">👻</span> <span><strong>GHOSTED:</strong> This post has been silently removed by automated filters or moderators and is invisible to others. ${reason}</span>`;
+        
+        if (postContainer) {
+          postContainer.parentElement.insertBefore(banner, postContainer);
+        } else {
+          document.body.prepend(banner);
+        }
+      }
+    } catch (e) {
+      Logger.log('Error checking stealth removal:', e);
+    }
   }
 };
 

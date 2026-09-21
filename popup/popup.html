@@ -30,6 +30,15 @@
       </div>
     </div>
 
+    <!-- Account Health Status -->
+    <div class="user-status-card" id="accountHealthCard" style="display: none; margin-top: 8px; border: 1px solid #334155;">
+      <div class="user-status-avatar" id="healthAvatar" style="background-color: #334155; font-size: 16px;">⚕️</div>
+      <div class="user-status-info">
+        <div class="user-status-name">Account Health</div>
+        <div class="user-status-meta" id="healthStatusText" style="font-weight: 600;">Checking status...</div>
+      </div>
+    </div>
+
     <!-- Browsing Protection -->
     <div class="section-title">BROWSING PROTECTION</div>
     <div class="control-row">
@@ -89,7 +98,10 @@
   </div>
 
   <div class="footer">
-    <button type="button" class="btn-link" id="btnOpenOptions">⚙ Full Extension Settings</button>
+    <button class="btn-link" id="btnOpenOptions">Advanced Options</button>
+    <div style="font-size: 9px; color: #64748b; margin-top: 10px;">
+      Special thanks to <a href="https://github.com/andradeatdev/Reddit-NSFW-Unblur" target="_blank" style="color: #64748b; text-decoration: underline;">andradeatdev</a> for unblur logic inspiration.
+    </div>
   </div>
 
   <script src="../utils/browser-api.js"></script>

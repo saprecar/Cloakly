@@ -87,5 +87,27 @@ api.runtime.onMessage.addListener((request, sender, sendResponse) => {
     })();
     return true;
   }
-});
+  if (request.action === 'CHECK_SHADOWBAN') {
+    (async () => {
+      try {
+        const tabs = await api.tabs.query({ url: "*://*.reddit.com/*" });
+        if (tabs.length === 0) {
+          sendResponse({ success: false, error: 'Please open a Reddit tab to check account health.' });
+          return;
+        }
 
+        // Send to the first active Reddit tab
+        api.tabs.sendMessage(tabs[0].id, { action: 'IFRAME_SHADOWBAN_CHECK' }, (res) => {
+          if (api.runtime.lastError) {
+            sendResponse({ success: false, error: api.runtime.lastError.message });
+          } else {
+            sendResponse(res || { success: false, error: 'No response from content script' });
+          }
+        });
+      } catch (err) {
+        sendResponse({ success: false, error: err.message });
+      }
+    })();
+    return true;
+  }
+});

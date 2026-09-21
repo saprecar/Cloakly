@@ -82,6 +82,77 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       });
     }
+
+    // Render Account Health (Shadowban Status)
+    const healthCard = document.getElementById('accountHealthCard');
+    const healthAvatar = document.getElementById('healthAvatar');
+    const healthStatusText = document.getElementById('healthStatusText');
+    
+    if (healthCard && healthAvatar && healthStatusText) {
+      healthCard.style.display = 'flex';
+      healthCard.style.cursor = 'pointer';
+      healthCard.title = 'Click to force a re-check';
+      
+      const updateHealthUI = (isBanned) => {
+        if (isBanned) {
+          healthCard.style.borderColor = '#ef4444';
+          healthAvatar.style.backgroundColor = '#ef4444';
+          healthAvatar.textContent = '⚠️';
+          healthStatusText.textContent = 'SHADOWBANNED';
+          healthStatusText.style.color = '#ef4444';
+        } else {
+          healthCard.style.borderColor = '#22c55e';
+          healthAvatar.style.backgroundColor = '#22c55e';
+          healthAvatar.textContent = '✓';
+          healthStatusText.textContent = 'Normal';
+          healthStatusText.style.color = '#22c55e';
+        }
+      };
+
+      if (settings.lastShadowbanCheck) {
+        updateHealthUI(settings.isShadowbanned);
+      } else {
+        healthCard.style.borderColor = '#334155';
+        healthAvatar.style.backgroundColor = '#334155';
+        healthAvatar.textContent = '⚕️';
+        healthStatusText.textContent = 'Pending check...';
+        healthStatusText.style.color = '#94a3b8';
+      }
+
+      // Allow manual click to force check (bypasses cache)
+      healthCard.addEventListener('click', async () => {
+        const uname = settings.lastDetectedUser?.username || settings.manualUsername;
+        if (!uname) {
+          alert('Please wait for a username to be detected first.');
+          return;
+        }
+
+        healthCard.style.borderColor = '#334155';
+        healthAvatar.style.backgroundColor = '#334155';
+        healthAvatar.textContent = '⏳';
+        healthStatusText.textContent = 'Checking... (Takes 2s)';
+        healthStatusText.style.color = '#94a3b8';
+
+        const api = typeof browser !== 'undefined' ? browser : chrome;
+        api.runtime.sendMessage({ action: 'CHECK_SHADOWBAN', username: uname }, async (res) => {
+          if (res && res.success) {
+            await StorageManager.updateSettings({
+              isShadowbanned: !!res.isShadowbanned,
+              lastShadowbanCheck: Date.now()
+            });
+            updateHealthUI(res.isShadowbanned);
+          } else {
+            healthStatusText.textContent = res?.error || 'Check failed';
+            healthStatusText.style.color = '#ef4444';
+          }
+        });
+      });
+      
+      // Auto-trigger if it has NEVER been checked
+      if (!settings.lastShadowbanCheck) {
+        healthCard.click();
+      }
+    }
   }
 
   // Bind toggles
@@ -95,6 +166,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!nsfwEl || !spoilerEl || !autoRevealEl) return;
 
     if (autoRevealEl.checked) {
+      nsfwEl.checked = false;
+      spoilerEl.checked = false;
+      
       nsfwEl.disabled = true;
       nsfwEl.parentElement.style.opacity = '0.5';
       spoilerEl.disabled = true;
@@ -107,6 +181,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     if (nsfwEl.checked || spoilerEl.checked) {
+      autoRevealEl.checked = false;
+      
       autoRevealEl.disabled = true;
       autoRevealEl.parentElement.style.opacity = '0.5';
     } else {
