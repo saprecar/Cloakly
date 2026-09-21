@@ -90,20 +90,67 @@ api.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'CHECK_SHADOWBAN') {
     (async () => {
       try {
-        const tabs = await api.tabs.query({ url: "*://*.reddit.com/*" });
-        if (tabs.length === 0) {
-          sendResponse({ success: false, error: 'Please open a Reddit tab to check account health.' });
-          return;
-        }
+        const tab = await api.tabs.create({ url: 'https://www.reddit.com/appeal', active: false });
+        
+        // Wait for tab to load and inject script
+        api.tabs.onUpdated.addListener(function listener(tabId, info) {
+          if (tabId === tab.id && info.status === 'complete') {
+            api.tabs.onUpdated.removeListener(listener);
+            
+            // Wait 2s for React to hydrate
+            setTimeout(() => {
+              api.scripting.executeScript({
+                target: { tabId: tab.id },
+                func: () => {
+                  if (window.location.href.includes('login')) {
+                    return { error: 'Not logged in' };
+                  }
+                  
+                  // Helper to deeply extract text from Shadow DOMs
+                  function getDeepText(node) {
+                    let text = '';
+                    if (node.nodeType === Node.TEXT_NODE) {
+                      text += node.textContent + ' ';
+                    }
+                    if (node.shadowRoot) {
+                      text += getDeepText(node.shadowRoot);
+                    }
+                    node.childNodes.forEach(child => {
+                      text += getDeepText(child);
+                    });
+                    return text;
+                  }
 
-        // Send to the first active Reddit tab
-        api.tabs.sendMessage(tabs[0].id, { action: 'IFRAME_SHADOWBAN_CHECK' }, (res) => {
-          if (api.runtime.lastError) {
-            sendResponse({ success: false, error: api.runtime.lastError.message });
-          } else {
-            sendResponse(res || { success: false, error: 'No response from content script' });
+                  const textLower = getDeepText(document.body).toLowerCase();
+                  const htmlLower = document.documentElement.innerHTML.toLowerCase();
+                  
+                  const isNormal = textLower.includes('neither suspended nor restricted') || 
+                                   textLower.includes('cannot submit an appeal') ||
+                                   htmlLower.includes('neither suspended nor restricted') ||
+                                   htmlLower.includes('cannot submit an appeal');
+                                   
+                  return { success: true, isShadowbanned: !isNormal };
+                }
+              }).then(results => {
+                api.tabs.remove(tab.id);
+                if (results && results[0] && results[0].result) {
+                  sendResponse(results[0].result);
+                } else {
+                  sendResponse({ success: false, error: 'Could not read page' });
+                }
+              }).catch(e => {
+                api.tabs.remove(tab.id);
+                sendResponse({ success: false, error: 'Script injection failed' });
+              });
+            }, 2000);
           }
         });
+
+        // Failsafe timeout
+        setTimeout(() => {
+          try { api.tabs.remove(tab.id); } catch (e) {}
+        }, 15000);
+
       } catch (err) {
         sendResponse({ success: false, error: err.message });
       }
