@@ -38,3 +38,17 @@ Their brilliant discovery of manipulating Lit Web Component reactive properties 
 
 ## Contributing
 Feel free to open issues or submit pull requests for bug fixes and feature enhancements!
+
+## License and Disclaimer
+
+### Dual-License (MIT / Commercial)
+This extension is licensed under the **MIT License** for all personal, non-commercial, and open-source use. 
+
+**For any business, commercial, or enterprise use** (including but not limited to incorporating the extension or any part of its code into a commercial product, using it for commercial automation, or distributing it for profit), a separate commercial license is required. Please contact the repository owner via this GitHub repository to obtain a commercial license.
+
+See the [LICENSE.md](LICENSE.md) file for full details.
+
+### Disclaimer
+**Use at Your Own Risk:** This extension automates actions and modifies content on Reddit. The authors are not responsible for any account bans, suspensions, data loss, or other consequences that may arise from the use of this software. 
+
+**Not Affiliated with Reddit:** This extension is an independent, unofficial tool and is **NOT** affiliated with, endorsed by, or sponsored by Reddit Inc. in any way. "Reddit" and the Reddit logo are registered trademarks of Reddit Inc.
