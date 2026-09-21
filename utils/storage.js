@@ -26,6 +26,11 @@ const DEFAULT_SETTINGS = {
   postFilters: [], // Array of { id, subreddit, keyword }
   blockedSubreddits: [], // Array of strings (e.g., 'news', 'gaming')
 
+  // Distraction Blocking
+  hideAds: false,
+  hideChat: false,
+  hideNotifications: false,
+
   // Manual Profile Overrides (for reliable checker testing/usage)
   useManualProfile: false,
   manualUsername: '',

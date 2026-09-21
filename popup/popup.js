@@ -202,7 +202,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     'spoilerProtection',
     'autoRevealNative',
     'postCheckEnabled',
-    'commentCheckEnabled'
+    'commentCheckEnabled',
+    'hideAds',
+    'hideChat',
+    'hideNotifications'
   ];
 
   checkboxes.forEach(id => {

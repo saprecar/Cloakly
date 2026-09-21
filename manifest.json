@@ -53,7 +53,8 @@
       "css": [
         "styles/blur.css",
         "styles/warning.css",
-        "styles/scrolling-only.css"
+        "styles/scrolling-only.css",
+        "styles/distractions.css"
       ],
       "js": [
         "utils/browser-api.js",

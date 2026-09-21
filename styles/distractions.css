@@ -1,0 +1,45 @@
+/* Reddit Privacy & Posting Safety Extension — Distraction Blockers */
+
+/* Hide Ads */
+html.rs-hide-ads shreddit-ad-post,
+html.rs-hide-ads faceplate-tracker[source="promoted"],
+html.rs-hide-ads .promotedlink,
+html.rs-hide-ads [data-testid="ad-post"],
+html.rs-hide-ads [data-adclicklocation] {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Hide Chat Button */
+html.rs-hide-chat a[href*="/chat"],
+html.rs-hide-chat button[aria-label*="Open chat"],
+html.rs-hide-chat faceplate-tracker[noun="chat"],
+html.rs-hide-chat [data-testid="chat-button"],
+html.rs-hide-chat shreddit-header-action-items a[href*="/chat"],
+html.rs-hide-chat a[aria-label*="chat" i] {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  padding: 0 !important;
+}
+
+/* Hide Notifications Button */
+html.rs-hide-notifs a[href*="/notifications"],
+html.rs-hide-notifs button[aria-label*="Open notifications"],
+html.rs-hide-notifs faceplate-tracker[noun="inbox"],
+html.rs-hide-notifs [data-testid="inbox-button"],
+html.rs-hide-notifs shreddit-header-action-items a[href*="/notifications"],
+html.rs-hide-notifs a[aria-label*="notifications" i],
+html.rs-hide-notifs a[aria-label*="inbox" i] {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  padding: 0 !important;
+}

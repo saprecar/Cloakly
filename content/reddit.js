@@ -25,6 +25,25 @@
       document.documentElement.classList.remove('rs-block-post-creation');
     }
 
+    // Distraction Blockers
+    if (currentSettings.hideAds) {
+      document.documentElement.classList.add('rs-hide-ads');
+    } else {
+      document.documentElement.classList.remove('rs-hide-ads');
+    }
+    
+    if (currentSettings.hideChat) {
+      document.documentElement.classList.add('rs-hide-chat');
+    } else {
+      document.documentElement.classList.remove('rs-hide-chat');
+    }
+    
+    if (currentSettings.hideNotifications) {
+      document.documentElement.classList.add('rs-hide-notifs');
+    } else {
+      document.documentElement.classList.remove('rs-hide-notifs');
+    }
+
     if (currentSettings.scrollingOnlyMode) {
       document.documentElement.classList.add('rs-scrolling-only');
       
