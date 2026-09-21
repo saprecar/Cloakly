@@ -24,3 +24,16 @@ Taking inspiration from [andradeatdev's Reddit-NSFW-Unblur](https://github.com/a
 3. **Mutation Observer:** The Main World script (`auto-reveal.js`) sets up a `MutationObserver` on `document.documentElement` filtering for `data-rs-auto-reveal`. When the attribute changes, it reads the primitive string and executes the Lit bypass.
 
 This architecture is robust, extremely fast, completely bypasses Chrome's MV3 CSP, and safely passes through Firefox's Xray Vision.
+
+## Duplicate Safety Cards Bug (Reddit's Virtualized DOM)
+
+### The Problem
+The "Comment Safety" guides were frequently duplicating themselves when the user scrolled through long comment threads.
+
+### The Cause
+Modern Reddit uses aggressive DOM virtualization (re-using the same DOM nodes for different comments as they scroll in and out of view). Because the extension was attaching UI elements based on simple DOM queries without tracking the lifecycle of the parent `<shreddit-composer>`, the `MutationObserver` would continually re-trigger and blindly inject new safety cards into re-used containers.
+
+### The Solution
+We implemented strict lifecycle tracking and cleanup in `content/ui.js`:
+1. **Sibling-Based Injection:** The safety guide is now strictly injected as a controlled sibling relative to the composer box, ensuring predictable placement.
+2. **Orphan Cleanup Routine:** Before attaching a new card, the UI manager actively scans for and destroys "orphaned" safety cards that no longer correspond to the currently active active element, preventing the virtualized DOM from accumulating stale UI components.
