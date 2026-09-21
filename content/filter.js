@@ -8,7 +8,10 @@ const FilterManager = {
    * Scans and hides posts based on user filters.
    */
   scanAndApply(settings) {
-    if (!settings || !settings.postFilters || settings.postFilters.length === 0) return;
+    const filters = settings.postFilters || [];
+    const blockedSubs = settings.blockedSubreddits || [];
+    
+    if (filters.length === 0 && blockedSubs.length === 0) return;
 
     const posts = RedditDetector.findPosts();
     if (posts.length === 0) return;
@@ -33,7 +36,15 @@ const FilterManager = {
         }
       }
 
-      for (const filter of settings.postFilters) {
+      // Check if this post is from a completely blocked subreddit
+      if (postSub && blockedSubs.includes(postSub)) {
+        postEl.dataset.rsFiltered = 'true';
+        postEl.style.display = 'none';
+        // Do not add a placeholder for completely blocked subreddits
+        return; // Move to next post
+      }
+
+      for (const filter of filters) {
         let subMatch = true;
         let keyMatch = true;
 
