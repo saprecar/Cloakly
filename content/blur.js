@@ -34,6 +34,7 @@ const BlurManager = {
                     c.isBlurred = false;
                     c._blur = false;
                     c.revealed = true;
+                    c.removeAttribute('reason'); // Reddit's new enforcement
                     
                     // Cleanup
                     c.removeAttribute('data-rs-auto-id');

@@ -22,14 +22,22 @@ const RedditDetector = {
    * @returns {Array<HTMLElement>}
    */
   findPosts() {
-    const layout = this.getLayoutType();
-    if (layout === 'SHREDDIT') {
-      return Array.from(document.querySelectorAll('shreddit-post'));
-    } else if (layout === 'OLD_REDDIT') {
-      return Array.from(document.querySelectorAll('.thing.link'));
-    } else {
-      return Array.from(document.querySelectorAll('div[data-testid="post-container"], div[id^="t3_"]'));
-    }
+    const posts = [];
+    const selectors = [
+      'shreddit-post',
+      'div[data-testid="post-container"]',
+      'div[id^="t3_"]',
+      'article',
+      '.thing.link'
+    ];
+    selectors.forEach(sel => {
+      document.querySelectorAll(sel).forEach(el => {
+        if (!posts.includes(el) && el.tagName !== 'SHREDDIT-APP') {
+          posts.push(el);
+        }
+      });
+    });
+    return posts;
   },
 
   /**
@@ -42,23 +50,22 @@ const RedditDetector = {
     let isSpoiler = false;
 
     // Check dataset or attributes
-    if (postEl.hasAttribute('nsfw') || postEl.dataset.isNsfw === 'true') isNSFW = true;
-    if (postEl.hasAttribute('spoiler') || postEl.dataset.isSpoiler === 'true') isSpoiler = true;
+    if (postEl.matches('[nsfw], [data-nsfw="true"], [data-nsfw="1"]')) isNSFW = true;
+    if (postEl.matches('[spoiler], [data-spoiler="true"], [data-spoiler="1"]')) isSpoiler = true;
 
-    // Check internal tags or badges
+    // Check internal tags or badges aggressively
     if (!isNSFW) {
-      const nsfwBadge = postEl.querySelector('[data-testid="nsfw-badge"], .nsfw-stamp, span[aria-label*="nsfw" i]');
-      if (nsfwBadge || /nsfw/i.test(postEl.innerText)) {
-        // Double check text scope to prevent false positives in title
-        if (nsfwBadge || postEl.querySelector('.title')?.classList.contains('nsfw') || postEl.getAttribute('data-nsfw') === '1') {
-          isNSFW = true;
-        }
+      const nsfwBadge = postEl.querySelector('[data-testid="nsfw-badge"], .nsfw-stamp, span[aria-label*="nsfw" i], [badge-type="nsfw"], shreddit-badge[text="NSFW" i], .badge-nsfw');
+      const title = postEl.querySelector('[slot="title"], .title, shreddit-post-title');
+      if (nsfwBadge || (title && /nsfw/i.test(title.innerText))) {
+        isNSFW = true;
       }
     }
 
     if (!isSpoiler) {
-      const spoilerBadge = postEl.querySelector('[data-testid="spoiler-badge"], .spoiler-stamp, span[aria-label*="spoiler" i]');
-      if (spoilerBadge || postEl.getAttribute('data-spoiler') === '1') {
+      const spoilerBadge = postEl.querySelector('[data-testid="spoiler-badge"], .spoiler-stamp, span[aria-label*="spoiler" i], [badge-type="spoiler"], shreddit-badge[text="Spoiler" i], .badge-spoiler');
+      const title = postEl.querySelector('[slot="title"], .title, shreddit-post-title');
+      if (spoilerBadge || (title && /spoiler/i.test(title.innerText))) {
         isSpoiler = true;
       }
     }
