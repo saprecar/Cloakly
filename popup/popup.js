@@ -260,8 +260,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   const progressContainer = document.getElementById('cleanerProgressContainer');
   const statusText = document.getElementById('cleanerStatusText');
   const progressBar = document.getElementById('cleanerProgressBar');
+  const timeRangeSelect = document.getElementById('cleanerTimeRange');
+  const customDateContainer = document.getElementById('cleanerCustomDate');
 
   if (btnStartCleaner && btnStopCleaner) {
+    if (timeRangeSelect) {
+      timeRangeSelect.addEventListener('change', (e) => {
+        customDateContainer.style.display = e.target.value === 'custom' ? 'block' : 'none';
+      });
+    }
+
     // Check initial status
     browserAPI.runtime.sendMessage({ action: 'GET_CLEANER_STATUS' }, (res) => {
       if (res && res.isRunning) {
@@ -291,13 +299,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
+      const timeRange = timeRangeSelect ? timeRangeSelect.value : 'all';
+      let dateStart = null;
+      let dateEnd = null;
+      
+      if (timeRange === 'custom') {
+        dateStart = document.getElementById('cleanerDateStart').value;
+        dateEnd = document.getElementById('cleanerDateEnd').value;
+        if (!dateStart && !dateEnd) {
+          alert('Please select at least one date for the custom range.');
+          return;
+        }
+      }
+
       const confirmation = prompt(`☢️ WARNING: This will PERMANENTLY delete your ${typesToClean.join(', ')}.\n\nTo confirm, type exactly: DELETE`);
       if (confirmation !== 'DELETE') {
         alert('Cancelled.');
         return;
       }
 
-      browserAPI.runtime.sendMessage({ action: 'START_CLEANER', username, typesToClean });
+      browserAPI.runtime.sendMessage({ 
+        action: 'START_CLEANER', 
+        username, 
+        typesToClean,
+        timeRange,
+        dateStart,
+        dateEnd
+      });
       
       btnStartCleaner.style.display = 'none';
       btnStopCleaner.style.display = 'block';

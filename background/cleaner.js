@@ -90,12 +90,31 @@ const RedditCleaner = {
     return new Promise(resolve => setTimeout(resolve, ms));
   },
 
-  async startCleaning(username, typesToClean, onProgress) {
+  async startCleaning(username, typesToClean, timeRange, dateStart, dateEnd, onProgress) {
     if (this.isRunning) return false;
     this.isRunning = true;
     this.cancelRequested = false;
 
     let totalDeleted = 0;
+
+    // Calculate boundary timestamps (in seconds since epoch, to match Reddit API)
+    const now = Math.floor(Date.now() / 1000);
+    let minTime = 0;
+    let maxTime = Number.MAX_SAFE_INTEGER;
+
+    if (timeRange === '1h') minTime = now - (60 * 60);
+    else if (timeRange === '24h') minTime = now - (24 * 60 * 60);
+    else if (timeRange === '7d') minTime = now - (7 * 24 * 60 * 60);
+    else if (timeRange === '30d') minTime = now - (30 * 24 * 60 * 60);
+    else if (timeRange === '1y') minTime = now - (365 * 24 * 60 * 60);
+    else if (timeRange === 'custom') {
+      if (dateStart) minTime = Math.floor(new Date(dateStart).getTime() / 1000);
+      if (dateEnd) {
+        const dEnd = new Date(dateEnd);
+        dEnd.setHours(23, 59, 59, 999);
+        maxTime = Math.floor(dEnd.getTime() / 1000);
+      }
+    }
 
     try {
       const modhash = await this.getModhash();
@@ -133,6 +152,19 @@ const RedditCleaner = {
             if (this.cancelRequested) break;
 
             const itemId = item.data.name;
+            const created = item.data.created_utc;
+
+            // If item is newer than our max custom date, skip it but keep going
+            if (created > maxTime) {
+              continue; 
+            }
+
+            // If item is older than our min time, stop fetching completely! (because list is chronological)
+            if (created < minTime) {
+              hasMore = false;
+              break; 
+            }
+
             onProgress({ status: `Processing ${type} (${itemId})...`, count: totalDeleted, activeType: type });
             
             const success = await this.performAction(action, itemId, modhash);
@@ -176,6 +208,9 @@ if (typeof browserAPI !== 'undefined') {
       RedditCleaner.startCleaning(
         request.username, 
         request.typesToClean, 
+        request.timeRange,
+        request.dateStart,
+        request.dateEnd,
         (progressInfo) => {
           // Broadcast progress back to popup
           browserAPI.runtime.sendMessage({ action: 'CLEANER_PROGRESS', ...progressInfo }).catch(() => {});

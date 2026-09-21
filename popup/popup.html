@@ -109,6 +109,30 @@
         <label style="font-size: 11px;"><input type="checkbox" id="cleanDownvoted"> Downvoted</label>
       </div>
 
+      <div style="margin-bottom: 10px;">
+        <label style="font-size: 11px; display: block; margin-bottom: 4px;">Time Range:</label>
+        <select id="cleanerTimeRange" style="width: 100%; padding: 4px; border-radius: 4px; border: 1px solid #475569; background: #1e293b; color: white; font-size: 11px;">
+          <option value="all">All Time</option>
+          <option value="1h">Last 1 Hour</option>
+          <option value="24h">Last 24 Hours</option>
+          <option value="7d">Last 7 Days</option>
+          <option value="30d">Last 30 Days</option>
+          <option value="1y">Last 1 Year</option>
+          <option value="custom">Custom Date Range...</option>
+        </select>
+      </div>
+
+      <div id="cleanerCustomDate" style="display: none; margin-bottom: 10px; padding: 6px; background: rgba(0,0,0,0.2); border-radius: 4px;">
+        <div style="display: flex; gap: 4px; align-items: center; margin-bottom: 4px;">
+          <label style="font-size: 10px; width: 30px;">From:</label>
+          <input type="date" id="cleanerDateStart" style="flex: 1; font-size: 10px; padding: 2px; background: #334155; color: white; border: 1px solid #475569; border-radius: 2px;">
+        </div>
+        <div style="display: flex; gap: 4px; align-items: center;">
+          <label style="font-size: 10px; width: 30px;">To:</label>
+          <input type="date" id="cleanerDateEnd" style="flex: 1; font-size: 10px; padding: 2px; background: #334155; color: white; border: 1px solid #475569; border-radius: 2px;">
+        </div>
+      </div>
+
       <div id="cleanerProgressContainer" style="display: none; margin-bottom: 10px;">
         <div style="font-size: 10px; color: #94a3b8; margin-bottom: 4px;" id="cleanerStatusText">Processing...</div>
         <div style="width: 100%; height: 4px; background: #334155; border-radius: 2px; overflow: hidden;">
