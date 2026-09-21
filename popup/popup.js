@@ -259,75 +259,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   const popupFilterKeyword = document.getElementById('popupFilterKeyword');
   const btnPopupAddFilter = document.getElementById('btnPopupAddFilter');
   const btnPopupBlockSub = document.getElementById('btnPopupBlockSub');
-  const popupFilterListContainer = document.getElementById('popupFilterListContainer');
-  const popupBlockedListContainer = document.getElementById('popupBlockedListContainer');
+  const btnManageFilters = document.getElementById('btnManageFilters');
 
-  async function renderPopupFilters() {
-    if (!popupFilterListContainer) return;
-    const currentSet = await StorageManager.getSettings();
-    const filters = currentSet.postFilters || [];
-    
-    if (filters.length === 0) {
-      popupFilterListContainer.innerHTML = '<div style="font-size: 10px; color: #64748b; text-align: center; padding: 2px;">No active filters.</div>';
-    } else {
-      popupFilterListContainer.innerHTML = filters.map(f => {
-        const subText = f.subreddit ? `r/${f.subreddit}` : 'All';
-        const keyText = f.keyword ? `"${f.keyword}"` : 'Any';
-        return `
-          <div style="display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 4px 6px; border-radius: 4px; border: 1px solid #1e293b;">
-            <div style="font-size: 10px; color: #cbd5e1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-              <strong style="color: #38bdf8;">${subText}</strong> + <strong style="color: #fb7185;">${keyText}</strong>
-            </div>
-            <button type="button" class="btn-delete-popup-filter" data-id="${f.id}" style="background: transparent; border: none; color: #ef4444; font-weight: bold; cursor: pointer; padding: 0 4px; font-size: 12px;">×</button>
-          </div>
-        `;
-      }).join('');
-
-      document.querySelectorAll('.btn-delete-popup-filter').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-          const idToRemove = e.target.getAttribute('data-id');
-          const s = await StorageManager.getSettings();
-          s.postFilters = (s.postFilters || []).filter(f => f.id !== idToRemove);
-          await StorageManager.updateSettings({ postFilters: s.postFilters });
-          renderPopupFilters();
-        });
-      });
-    }
-  }
-
-  async function renderPopupBlocked() {
-    if (!popupBlockedListContainer) return;
-    const currentSet = await StorageManager.getSettings();
-    const blocked = currentSet.blockedSubreddits || [];
-    
-    if (blocked.length === 0) {
-      popupBlockedListContainer.innerHTML = '';
-    } else {
-      popupBlockedListContainer.innerHTML = blocked.map(sub => `
-        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(239, 68, 68, 0.1); padding: 4px 6px; border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.3);">
-          <div style="font-size: 10px; color: #fca5a5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-            Blocked: <strong>r/${sub}</strong>
-          </div>
-          <button type="button" class="btn-delete-popup-blocked" data-sub="${sub}" style="background: transparent; border: none; color: #ef4444; font-weight: bold; cursor: pointer; padding: 0 4px; font-size: 12px;">×</button>
-        </div>
-      `).join('');
-
-      document.querySelectorAll('.btn-delete-popup-blocked').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-          const subToRemove = e.target.getAttribute('data-sub');
-          const s = await StorageManager.getSettings();
-          s.blockedSubreddits = (s.blockedSubreddits || []).filter(s => s !== subToRemove);
-          await StorageManager.updateSettings({ blockedSubreddits: s.blockedSubreddits });
-          renderPopupBlocked();
-        });
-      });
-    }
+  if (btnManageFilters) {
+    btnManageFilters.addEventListener('click', () => {
+      const api = typeof browser !== 'undefined' ? browser : chrome;
+      if (api.runtime.openOptionsPage) {
+        api.runtime.openOptionsPage();
+      } else {
+        window.open(api.runtime.getURL('options/options.html'));
+      }
+    });
   }
 
   if (btnPopupAddFilter) {
-    renderPopupFilters();
-    renderPopupBlocked();
-
     btnPopupAddFilter.addEventListener('click', async () => {
       const sub = popupFilterSubreddit.value.trim().toLowerCase().replace(/^r\//, '');
       const keyword = popupFilterKeyword.value.trim().toLowerCase();
@@ -350,7 +295,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       
       popupFilterSubreddit.value = '';
       popupFilterKeyword.value = '';
-      renderPopupFilters();
+      
+      // Briefly show feedback on the button
+      const oldText = btnPopupAddFilter.textContent;
+      btnPopupAddFilter.textContent = '✓ ADDED';
+      setTimeout(() => { btnPopupAddFilter.textContent = oldText; }, 1500);
     });
   }
 
@@ -370,7 +319,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       popupFilterSubreddit.value = '';
-      renderPopupBlocked();
+      
+      // Briefly show feedback on the button
+      const oldText = btnPopupBlockSub.textContent;
+      btnPopupBlockSub.textContent = '✓ BLOCKED';
+      setTimeout(() => { btnPopupBlockSub.textContent = oldText; }, 1500);
     });
   }
 
