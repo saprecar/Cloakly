@@ -97,17 +97,24 @@
     </div>
 
     <!-- Feed Filters -->
-    <div class="section-title" style="margin-top: 16px;">FEED FILTERS / POST HIDING</div>
+    <div class="section-title" style="margin-top: 16px;">FEED FILTERS & SUB BLOCKER</div>
     <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid var(--border); padding: 10px; border-radius: 8px;">
-      <p style="font-size: 11px; color: #94a3b8; margin-bottom: 8px;">Hide posts as you scroll.</p>
+      <p style="font-size: 11px; color: #94a3b8; margin-bottom: 8px;">Hide posts as you scroll, or block subreddits entirely.</p>
       
       <div style="display: flex; gap: 4px; margin-bottom: 6px;">
         <input type="text" id="popupFilterSubreddit" placeholder="Subreddit (e.g. news)" style="background:#0f172a; border:1px solid #334155; color:#fff; padding:4px 6px; border-radius:4px; font-size:11px; flex:1; width: 45%;">
         <input type="text" id="popupFilterKeyword" placeholder="Keyword (e.g. election)" style="background:#0f172a; border:1px solid #334155; color:#fff; padding:4px 6px; border-radius:4px; font-size:11px; flex:1; width: 45%;">
       </div>
-      <button type="button" id="btnPopupAddFilter" style="width: 100%; padding: 6px; background: #3b82f6; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px; margin-bottom: 8px;">+ ADD FILTER RULE</button>
       
-      <div id="popupFilterListContainer" style="max-height: 100px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;">
+      <div style="display: flex; gap: 4px; margin-bottom: 8px;">
+        <button type="button" id="btnPopupAddFilter" style="flex: 1; padding: 6px; background: #3b82f6; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px;">+ ADD FILTER</button>
+        <button type="button" id="btnPopupBlockSub" style="flex: 1; padding: 6px; background: #ef4444; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px;">⛔ BLOCK SUB</button>
+      </div>
+      
+      <div id="popupFilterListContainer" style="max-height: 80px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; margin-bottom: 4px;">
+        <!-- Populated via JS -->
+      </div>
+      <div id="popupBlockedListContainer" style="max-height: 80px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;">
         <!-- Populated via JS -->
       </div>
     </div>
