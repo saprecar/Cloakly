@@ -254,6 +254,74 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
 
+  // Popup Filter UI Logic
+  const popupFilterSubreddit = document.getElementById('popupFilterSubreddit');
+  const popupFilterKeyword = document.getElementById('popupFilterKeyword');
+  const btnPopupAddFilter = document.getElementById('btnPopupAddFilter');
+  const popupFilterListContainer = document.getElementById('popupFilterListContainer');
+
+  async function renderPopupFilters() {
+    if (!popupFilterListContainer) return;
+    const currentSet = await StorageManager.getSettings();
+    const filters = currentSet.postFilters || [];
+    
+    if (filters.length === 0) {
+      popupFilterListContainer.innerHTML = '<div style="font-size: 10px; color: #64748b; text-align: center; padding: 4px;">No active filters.</div>';
+      return;
+    }
+
+    popupFilterListContainer.innerHTML = filters.map(f => {
+      const subText = f.subreddit ? `r/${f.subreddit}` : 'All';
+      const keyText = f.keyword ? `"${f.keyword}"` : 'Any';
+      return `
+        <div style="display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 4px 6px; border-radius: 4px; border: 1px solid #1e293b;">
+          <div style="font-size: 10px; color: #cbd5e1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            <strong style="color: #38bdf8;">${subText}</strong> + <strong style="color: #fb7185;">${keyText}</strong>
+          </div>
+          <button type="button" class="btn-delete-popup-filter" data-id="${f.id}" style="background: transparent; border: none; color: #ef4444; font-weight: bold; cursor: pointer; padding: 0 4px; font-size: 12px;">×</button>
+        </div>
+      `;
+    }).join('');
+
+    document.querySelectorAll('.btn-delete-popup-filter').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const idToRemove = e.target.getAttribute('data-id');
+        const s = await StorageManager.getSettings();
+        s.postFilters = (s.postFilters || []).filter(f => f.id !== idToRemove);
+        await StorageManager.updateSettings({ postFilters: s.postFilters });
+        renderPopupFilters();
+      });
+    });
+  }
+
+  if (btnPopupAddFilter) {
+    renderPopupFilters();
+    btnPopupAddFilter.addEventListener('click', async () => {
+      const sub = popupFilterSubreddit.value.trim().toLowerCase().replace(/^r\//, '');
+      const keyword = popupFilterKeyword.value.trim().toLowerCase();
+
+      if (!sub && !keyword) {
+        alert('Please enter a subreddit, a keyword, or both.');
+        return;
+      }
+
+      const s = await StorageManager.getSettings();
+      if (!s.postFilters) s.postFilters = [];
+      
+      s.postFilters.push({
+        id: Date.now().toString(),
+        subreddit: sub,
+        keyword: keyword
+      });
+
+      await StorageManager.updateSettings({ postFilters: s.postFilters });
+      
+      popupFilterSubreddit.value = '';
+      popupFilterKeyword.value = '';
+      renderPopupFilters();
+    });
+  }
+
   // Cleaner UI Logic
   const btnStartCleaner = document.getElementById('btnStartCleaner');
   const btnStopCleaner = document.getElementById('btnStopCleaner');

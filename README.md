@@ -8,6 +8,9 @@ A powerful browser extension designed to enhance your Reddit experience by givin
 - **Auto-Reveal Native Blurs:** Automatically unblur Reddit's native NSFW and Spoiler images as you scroll (bypasses Reddit's strict click blocks!).
 - **User Account Detection:** Automatically detects and displays your account age and Karma for quick reference.
 - **Posting Safety:** Warns you before posting in a subreddit if you don't meet their Karma or Account Age requirements.
+- **Shadowban Detector:** Automatically checks and warns you if your account has been silently shadowbanned by Reddit.
+- **Post Hider (Feed Filters):** Dynamically curates your home feed. Hide posts as you scroll by matching specific subreddits, keywords, or a combination of both.
+- **Account Nuke / Cleaner:** Permanently wipes your account history (Posts, Comments, Saved items, Upvotes, Downvotes) based on custom time ranges (Last hour, 24h, 7d, 30d, 1y, or custom dates).
 
 ## Credits & Acknowledgements
 
