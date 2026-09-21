@@ -60,6 +60,39 @@
         }
       });
     }
+
+    // Aggressive JS Fallback for "Create Post" buttons (Subreddit headers, shadow doms, dynamic faceplates)
+    const createPostEls = [
+      ...document.querySelectorAll('a[href*="/submit"], faceplate-tracker[noun="create_post"], faceplate-tracker[noun="create_post_button"], shreddit-sidebar-create-post-button')
+    ];
+    // Pierce shadow dom of shreddit-subreddit-header which houses the subreddit Create Post button
+    document.querySelectorAll('shreddit-subreddit-header').forEach(header => {
+      if (header.shadowRoot) {
+        createPostEls.push(...header.shadowRoot.querySelectorAll('a[href*="/submit"], faceplate-tracker[noun="create_post"], button'));
+      }
+    });
+
+    // Also look inside all collected potential elements for the exact text 'Create Post'
+    [...document.querySelectorAll('button, a, span, div, faceplate-tracker'), ...createPostEls].forEach(el => {
+      if (el && el.innerText && el.innerText.trim().toLowerCase() === 'create post') {
+        const target = el.closest('button, a, faceplate-tracker') || el;
+        if (!createPostEls.includes(target)) createPostEls.push(target);
+      }
+    });
+
+    if (currentSettings.blockPostCreation || currentSettings.scrollingOnlyMode) {
+      createPostEls.forEach(el => {
+        if (el && el.style) {
+          el.style.setProperty('display', 'none', 'important');
+        }
+      });
+    } else {
+      createPostEls.forEach(el => {
+        if (el && el.style && el.style.display === 'none') {
+          el.style.removeProperty('display');
+        }
+      });
+    }
   }
 
   // Shadowban check routine (runs once per 24 hours per session)
