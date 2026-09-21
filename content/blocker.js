@@ -16,16 +16,27 @@
 
   const currentSub = match[1];
 
-  // We need to wait for browserAPI and StorageManager to be available.
-  // Since this runs at document_start, we might need to rely on direct browser.storage.
   const api = typeof browser !== 'undefined' ? browser : chrome;
   
   try {
     const rawStorage = await api.storage.local.get(null);
     const activeProfile = rawStorage.activeProfile || 'default';
     const profileSettings = rawStorage.profiles ? (rawStorage.profiles[activeProfile] || {}) : rawStorage;
+    
+    // 1. Block Post Creation via URL
+    // Check if post creation is explicitly allowed (default true) or temporarily overridden
+    const isPostAllowed = profileSettings.allowPostCreation !== false || (profileSettings.tempPostEnableUntil && Date.now() < profileSettings.tempPostEnableUntil);
+    if (!isPostAllowed) {
+      if (path.includes('/submit') || (path.includes('/r/') && path.endsWith('/submit'))) {
+        window.stop();
+        // Redirect to Reddit home with a blocked flag
+        window.location.replace('https://www.reddit.com/?rs_blocked=post');
+        return;
+      }
+    }
     const blockedSubs = profileSettings.blockedSubreddits || [];
 
+    // 1. Block Subreddits
     if (blockedSubs.includes(currentSub)) {
       // STOP PAGE RENDER!
       window.stop();

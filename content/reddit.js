@@ -17,7 +17,9 @@
     PostChecker.init(currentSettings);
     PostChecker.checkStealthRemoval();
     
-    if (currentSettings.blockPostCreation) {
+    const blockPostCreation = typeof StorageManager !== 'undefined' ? !StorageManager.isPostCreationAllowed(currentSettings) : !currentSettings.allowPostCreation;
+
+    if (blockPostCreation) {
       document.documentElement.classList.add('rs-block-post-creation');
     } else {
       document.documentElement.classList.remove('rs-block-post-creation');
@@ -80,7 +82,7 @@
       }
     });
 
-    if (currentSettings.blockPostCreation || currentSettings.scrollingOnlyMode) {
+    if (blockPostCreation || currentSettings.scrollingOnlyMode) {
       createPostEls.forEach(el => {
         if (el && el.style) {
           el.style.setProperty('display', 'none', 'important');
