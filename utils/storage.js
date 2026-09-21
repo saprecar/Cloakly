@@ -56,7 +56,36 @@ const StorageManager = {
   async getSettings() {
     try {
       const stored = await browserAPI.storage.get(null);
-      return { ...DEFAULT_SETTINGS, ...stored };
+
+      // --- MIGRATION: V1 (Flat) to V2 (Profiles) ---
+      if (!stored.profiles) {
+        const v1Settings = { ...stored };
+        delete v1Settings.ruleCache; // Global
+        delete v1Settings.activeProfile;
+        
+        const username = v1Settings.useManualProfile && v1Settings.manualUsername 
+                         ? v1Settings.manualUsername 
+                         : (v1Settings.lastDetectedUser?.username || 'default');
+        
+        stored.profiles = {};
+        stored.profiles[username] = v1Settings;
+        stored.activeProfile = username;
+        stored.ruleCache = stored.ruleCache || {};
+        
+        // Save the migrated data back to raw storage
+        await browserAPI.storage.set(stored);
+      }
+
+      // Determine active profile
+      const activeProfile = stored.activeProfile || 'default';
+      const profileSettings = stored.profiles[activeProfile] || {};
+      
+      // Return a transparent, flat object merged with defaults
+      return { 
+        ...DEFAULT_SETTINGS, 
+        ...profileSettings, 
+        ruleCache: stored.ruleCache || {}
+      };
     } catch (err) {
       console.error('[Reddit Safety] Storage fetch error:', err);
       return { ...DEFAULT_SETTINGS };
@@ -65,25 +94,68 @@ const StorageManager = {
 
   async updateSettings(newSettings) {
     try {
-      // Check if username changed to safely reset shadowban cache
-      if (newSettings.lastDetectedUser || newSettings.manualUsername !== undefined || newSettings.useManualProfile !== undefined) {
-        const current = await browserAPI.storage.get(null);
-        const oldName = current.useManualProfile ? current.manualUsername : current.lastDetectedUser?.username;
-        
-        const newUseManual = newSettings.useManualProfile !== undefined ? newSettings.useManualProfile : current.useManualProfile;
-        const newManualName = newSettings.manualUsername !== undefined ? newSettings.manualUsername : current.manualUsername;
-        const newDetectedName = newSettings.lastDetectedUser ? newSettings.lastDetectedUser.username : current.lastDetectedUser?.username;
-        
-        const newName = newUseManual ? newManualName : newDetectedName;
-        
-        if (newName && oldName && newName !== oldName) {
-          newSettings.isShadowbanned = false;
-          newSettings.lastShadowbanCheck = 0;
-          console.log('[Reddit Safety] Username changed, resetting shadowban cache.');
+      const stored = await browserAPI.storage.get(null);
+      
+      // Ensure V2 structure exists
+      if (!stored.profiles) {
+         // getSettings will handle migration on read, but if they update first, we must bootstrap it
+         stored.profiles = { 'default': { ...DEFAULT_SETTINGS } };
+         stored.activeProfile = 'default';
+         stored.ruleCache = {};
+      }
+
+      let activeProfile = stored.activeProfile || 'default';
+      let profileSwitched = false;
+
+      // 1. Detect if the username changed, which means we must SWITCH the active profile
+      const newUseManual = newSettings.useManualProfile !== undefined ? newSettings.useManualProfile : (stored.profiles[activeProfile]?.useManualProfile || false);
+      
+      // Check manual username switch
+      if (newUseManual && newSettings.manualUsername !== undefined) {
+        if (newSettings.manualUsername && newSettings.manualUsername !== activeProfile) {
+          activeProfile = newSettings.manualUsername;
+          profileSwitched = true;
+        }
+      } 
+      // Check auto-detected username switch
+      else if (!newUseManual && newSettings.lastDetectedUser && newSettings.lastDetectedUser.username) {
+        if (newSettings.lastDetectedUser.username !== activeProfile) {
+          activeProfile = newSettings.lastDetectedUser.username;
+          profileSwitched = true;
         }
       }
 
-      await browserAPI.storage.set(newSettings);
+      // If we switched profiles, ensure the new profile exists in storage
+      if (profileSwitched) {
+        stored.activeProfile = activeProfile;
+        if (!stored.profiles[activeProfile]) {
+          stored.profiles[activeProfile] = {}; // Will inherit DEFAULT_SETTINGS on read
+        }
+        console.log(`[Reddit Safety] Switched active profile to: ${activeProfile}`);
+        
+        // Reset shadowban check for new profile if it hasn't been checked yet
+        if (!stored.profiles[activeProfile].lastShadowbanCheck) {
+          newSettings.isShadowbanned = false;
+          newSettings.lastShadowbanCheck = 0;
+        }
+      }
+
+      // 2. Separate global keys from profile keys
+      const profileUpdates = { ...newSettings };
+      
+      if ('ruleCache' in profileUpdates) {
+         stored.ruleCache = profileUpdates.ruleCache;
+         delete profileUpdates.ruleCache;
+      }
+
+      // 3. Apply profile updates to the currently active profile
+      stored.profiles[activeProfile] = {
+         ...(stored.profiles[activeProfile] || {}),
+         ...profileUpdates
+      };
+
+      // Save raw nested structure back to storage
+      await browserAPI.storage.set(stored);
       return true;
     } catch (err) {
       console.error('[Reddit Safety] Storage update error:', err);
