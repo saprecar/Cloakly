@@ -18,11 +18,18 @@
     PostChecker.checkStealthRemoval();
     
     const blockPostCreation = typeof StorageManager !== 'undefined' ? !StorageManager.isPostCreationAllowed(currentSettings) : !currentSettings.allowPostCreation;
+    const blockCommentCreation = typeof StorageManager !== 'undefined' ? !StorageManager.isCommentCreationAllowed(currentSettings) : !currentSettings.allowCommentCreation;
 
     if (blockPostCreation) {
       document.documentElement.classList.add('rs-block-post-creation');
     } else {
       document.documentElement.classList.remove('rs-block-post-creation');
+    }
+
+    if (blockCommentCreation) {
+      document.documentElement.classList.add('rs-block-comment-creation');
+    } else {
+      document.documentElement.classList.remove('rs-block-comment-creation');
     }
 
     // Distraction Blockers

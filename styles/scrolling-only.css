@@ -73,3 +73,22 @@ html.rs-block-post-creation faceplate-tracker[noun="create_post_button"] {
   pointer-events: none !important;
   visibility: hidden !important;
 }
+
+/* 
+ * Hide Comment Composers
+ * Active if Explore Mode (rs-scrolling-only) OR Block Comment Creation (rs-block-comment-creation) is enabled
+ */
+html.rs-scrolling-only shreddit-composer,
+html.rs-block-comment-creation shreddit-composer,
+html.rs-scrolling-only [bundlename*="comment_composer"],
+html.rs-block-comment-creation [bundlename*="comment_composer"],
+html.rs-scrolling-only .commentarea,
+html.rs-block-comment-creation .commentarea {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
