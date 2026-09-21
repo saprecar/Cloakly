@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reddit Privacy & Safety Settings</title>
+  <link rel="stylesheet" href="options.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+        </svg>
+        <div class="brand-text">
+          <span class="brand-title">Reddit Safety</span>
+          <span class="brand-subtitle">Extension Control Center</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="tab-browsing">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Browsing Protection
+        </button>
+        <button class="nav-item" data-tab="tab-posting">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Posting & Commenting
+        </button>
+        <button class="nav-item" data-tab="tab-cache">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          Subreddit Rule Cache
+        </button>
+        <button class="nav-item" data-tab="tab-profile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          User Profile
+        </button>
+        <button class="nav-item" data-tab="tab-advanced">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Advanced & Privacy
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="privacy-badge">
+          <span class="dot"></span>
+          <span>100% Local Engine — No Cloud</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Panels -->
+    <main class="main-content">
+      <!-- Header Banner -->
+      <header class="header">
+        <div>
+          <h1 id="tab-title">Browsing Protection</h1>
+          <p id="tab-desc">Configure local media blur and sensitive content filtering preferences.</p>
+        </div>
+        <div class="save-status" id="saveStatus">✓ Settings Saved</div>
+      </header>
+
+      <!-- TAB 1: Browsing Protection -->
+      <section class="tab-panel active" id="tab-browsing">
+        <div class="card">
+          <div class="card-header">
+            <h3>Content Categories</h3>
+            <p>Automatically detect and obscure media based on Reddit tags.</p>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="nsfwProtection">NSFW Media Protection</label>
+              <span class="setting-desc">Blur media marked as Not Safe For Work.</span>
+            </div>
+            <input type="checkbox" id="nsfwProtection" class="switch">
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="spoilerProtection">Spoiler Media Protection</label>
+              <span class="setting-desc">Blur media marked as Spoiler.</span>
+            </div>
+            <input type="checkbox" id="spoilerProtection" class="switch">
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>Media Elements to Blur</h3>
+            <p>Select which specific media types are affected when protection is triggered.</p>
+          </div>
+          <div class="grid-2col">
+            <div class="setting-row">
+              <div class="setting-info">
+                <label for="blurImages">Images</label>
+                <span class="setting-desc">Blur post image attachments.</span>
+              </div>
+              <input type="checkbox" id="blurImages" class="switch">
+            </div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <label for="blurVideos">Videos</label>
+                <span class="setting-desc">Blur video players and previews.</span>
+              </div>
+              <input type="checkbox" id="blurVideos" class="switch">
+            </div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <label for="blurGifs">GIF Animations</label>
+                <span class="setting-desc">Blur animated GIF previews.</span>
+              </div>
+              <input type="checkbox" id="blurGifs" class="switch">
+            </div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <label for="blurThumbnails">Thumbnails</label>
+                <span class="setting-desc">Blur small post thumbnails in feed view.</span>
+              </div>
+              <input type="checkbox" id="blurThumbnails" class="switch">
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>Visual & Reveal Settings</h3>
+            <p>Customize blur intensity and reveal interaction behavior.</p>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="blurIntensity">Blur Intensity</label>
+              <span class="setting-desc">Choose pixel blur radius applied to media.</span>
+            </div>
+            <select id="blurIntensity" class="select-input">
+              <option value="low">Low (12px)</option>
+              <option value="medium">Medium (24px)</option>
+              <option value="high">High (40px)</option>
+            </select>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="revealMethod">Reveal Method</label>
+              <span class="setting-desc">How you interact with blurred media to view it.</span>
+            </div>
+            <select id="revealMethod" class="select-input">
+              <option value="click">Click Reveal Button</option>
+              <option value="hover">Hover Over Media</option>
+            </select>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="keepRevealed">Keep Revealed Content</label>
+              <span class="setting-desc">Maintain unblurred state until page is refreshed.</span>
+            </div>
+            <input type="checkbox" id="keepRevealed" class="switch">
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="reblurOnNavigation">Automatic Re-blur on Navigation</label>
+              <span class="setting-desc">Re-apply blur when navigating between Reddit subreddits.</span>
+            </div>
+            <input type="checkbox" id="reblurOnNavigation" class="switch">
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: Posting & Commenting -->
+      <section class="tab-panel" id="tab-posting">
+        <div class="card">
+          <div class="card-header">
+            <h3>Pre-Submission Requirement Checker</h3>
+            <p>Scan subreddit rules before posting or commenting to prevent automatic removals.</p>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="postCheckEnabled">Check Posts Before Submission</label>
+              <span class="setting-desc">Verify account age, karma, flair, and title requirements before submitting a post.</span>
+            </div>
+            <input type="checkbox" id="postCheckEnabled" class="switch">
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="commentCheckEnabled">Check Comments Before Submission</label>
+              <span class="setting-desc">Verify account age and comment karma requirements before submitting a comment.</span>
+            </div>
+            <input type="checkbox" id="commentCheckEnabled" class="switch">
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="protectionLevel">Protection Level</label>
+              <span class="setting-desc">Warning Mode displays warnings but lets you submit. Strict Blocking prevents submit if requirements fail.</span>
+            </div>
+            <select id="protectionLevel" class="select-input">
+              <option value="warning">Warning Mode (Recommend & Warn)</option>
+              <option value="strict">Strict Blocking (Block Submission)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>Creation Disabling Controls</h3>
+            <p>Prevent accidental posting or commenting by hiding or disabling submission controls.</p>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="allowPostCreation">Allow Post Creation</label>
+              <span class="setting-desc">When OFF, hides/disables post creation buttons across Reddit.</span>
+            </div>
+            <input type="checkbox" id="allowPostCreation" class="switch">
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="allowCommentCreation">Allow Comment Creation</label>
+              <span class="setting-desc">When OFF, hides/disables comment reply controls across Reddit.</span>
+            </div>
+            <input type="checkbox" id="allowCommentCreation" class="switch">
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>Temporary Overrides</h3>
+            <p>Temporarily override disabled creation controls without changing permanent preferences.</p>
+          </div>
+          <div class="override-buttons">
+            <button type="button" class="btn btn-action" id="btnTempPostOpt">Enable Post Creation (10 Minutes)</button>
+            <button type="button" class="btn btn-action" id="btnTempCommentOpt">Enable Comment Creation (10 Minutes)</button>
+          </div>
+          <p class="override-status" id="overrideStatusText">No temporary overrides currently active.</p>
+        </div>
+      </section>
+
+      <!-- TAB 3: Subreddit Rule Cache -->
+      <section class="tab-panel" id="tab-cache">
+        <div class="card">
+          <div class="card-header">
+            <h3>Cached Subreddit Requirements</h3>
+            <p>Locally stored rule data parsed from subreddits you have visited.</p>
+          </div>
+          <div class="cache-controls">
+            <span id="cacheCountText">0 subreddits cached locally</span>
+            <button type="button" class="btn btn-danger" id="btnClearCache">Clear Rule Cache</button>
+          </div>
+          <div class="cache-list" id="cacheListContainer">
+            <div class="empty-state">No subreddit rules currently cached. Visit Reddit subreddits to build cache.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: User Profile Settings -->
+      <section class="tab-panel" id="tab-profile">
+        <div class="card">
+          <div class="card-header">
+            <h3>Active Reddit Account Status</h3>
+            <p>Automatically detected from your active browser session when visiting Reddit (no API setup required).</p>
+          </div>
+          <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid var(--border); border-radius: 8px; padding: 16px; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <div style="font-weight: 600; font-size: 15px; color: var(--text);" id="optionsDetectedUsername">Auto-detecting...</div>
+              <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;" id="optionsDetectedMeta">Visit Reddit to synchronize your account stats.</div>
+            </div>
+            <span class="badge" id="optionsDetectedBadge" style="background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">AUTO-DETECT</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>Manual Profile Override (Testing)</h3>
+            <p>Optionally override detected stats with manual test values for checking subreddit rules.</p>
+          </div>
+          
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="useManualProfile">Enable Manual Profile Override</label>
+              <span class="setting-desc">If enabled, the safety checker will use these exact values instead of trying to guess them.</span>
+            </div>
+            <input type="checkbox" id="useManualProfile" class="switch">
+          </div>
+
+          <div id="manual-profile-fields" style="opacity: 0.5; pointer-events: none; transition: opacity 0.2s; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border);">
+            <div class="setting-row" style="margin-bottom: 16px;">
+              <div class="setting-info">
+                <label for="manualUsername">Reddit Username (Optional)</label>
+              </div>
+              <input type="text" id="manualUsername" placeholder="e.g. u/Spez" class="text-input" style="width: 250px;">
+            </div>
+
+            <div class="setting-row" style="margin-bottom: 16px;">
+              <div class="setting-info">
+                <label for="manualAccountAgeDays">Account Age (in days)</label>
+                <span class="setting-desc">Enter the total number of days since your account was created.</span>
+              </div>
+              <input type="number" id="manualAccountAgeDays" placeholder="e.g. 150" min="0" class="text-input" style="width: 120px;">
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-info">
+                <label for="manualKarma">Total Karma</label>
+                <span class="setting-desc">Enter your total combined karma (post + comment).</span>
+              </div>
+              <input type="number" id="manualKarma" placeholder="e.g. 5400" min="0" class="text-input" style="width: 120px;">
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="tab-panel" id="tab-advanced">
+        <div class="card">
+          <div class="card-header">
+            <h3>Privacy & Engine Diagnostics</h3>
+            <p>Developer settings and local storage management.</p>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="debugMode">Debug Logging</label>
+              <span class="setting-desc">Output technical detection logs to browser developer console.</span>
+            </div>
+            <input type="checkbox" id="debugMode" class="switch">
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>Reset Configuration</h3>
+            <p>Restore all extension settings to default out-of-the-box values.</p>
+          </div>
+          <button type="button" class="btn btn-danger" id="btnResetDefaults">Reset All Settings to Default</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="../utils/browser-api.js"></script>
+  <script src="../utils/storage.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+{
+  "manifest_version": 3,
+  "name": "Reddit Privacy & Posting Safety",
+  "version": "1.0.0",
+  "description": "Local NSFW/Spoiler media blur protection and pre-submission subreddit requirement safety checker.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "storage",
+    "alarms"
+  ],
+  "host_permissions": [
+    "*://*.reddit.com/*",
+    "*://reddit.com/*"
+  ],
+  "background": {
+    "scripts": [
+      "utils/browser-api.js",
+      "utils/storage.js",
+      "utils/logger.js",
+      "background/background.js"
+    ],
+    "service_worker": "background/background.js"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "reddit-privacy-safety@local"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.reddit.com/*",
+        "*://reddit.com/*"
+      ],
+      "css": [
+        "styles/blur.css",
+        "styles/warning.css"
+      ],
+      "js": [
+        "utils/browser-api.js",
+        "utils/logger.js",
+        "utils/storage.js",
+        "rules/rule-patterns.js",
+        "rules/rule-engine.js",
+        "content/detector.js",
+        "content/ui.js",
+        "content/blur.js",
+        "content/post-checker.js",
+        "content/reddit.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Reddit Safety Settings",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_page": "options/options.html"
+}

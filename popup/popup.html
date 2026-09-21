@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Reddit Privacy & Safety</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="header">
+    <div class="title-group">
+      <svg class="shield-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+      </svg>
+      <h1>Reddit Safety</h1>
+    </div>
+    <span class="badge-status">LOCAL ONLY</span>
+  </div>
+
+  <div class="content">
+    <!-- User Account Status -->
+    <div class="user-status-card" id="userStatusCard">
+      <div class="user-status-avatar">👤</div>
+      <div class="user-status-info">
+        <div class="user-status-name" id="popupUsername">Detecting user profile...</div>
+        <div class="user-status-meta" id="popupUserStats">Open Reddit to sync account stats</div>
+        <div style="display: flex; gap: 4px; margin-top: 6px;">
+          <input type="text" id="quickUsernameInput" placeholder="Username (e.g. your_username)" style="background:#0f172a; border:1px solid #334155; color:#fff; padding:4px 6px; border-radius:4px; font-size:11px; flex:1; width: 140px;">
+          <button type="button" id="btnQuickSync" style="background:#ff4500; border:none; color:#fff; padding:4px 8px; border-radius:4px; font-size:11px; font-weight:600; cursor:pointer;">Sync</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Browsing Protection -->
+    <div class="section-title">BROWSING PROTECTION</div>
+    <div class="control-row">
+      <label for="nsfwProtection">NSFW Blur</label>
+      <input type="checkbox" id="nsfwProtection" class="toggle-switch">
+    </div>
+    <div class="control-row">
+      <label for="spoilerProtection">Spoiler Blur</label>
+      <input type="checkbox" id="spoilerProtection" class="toggle-switch">
+    </div>
+    <div class="control-row" style="margin-top: 8px; border-top: 1px solid #1e293b; padding-top: 8px;">
+      <label for="autoRevealNative" style="font-size: 11px; color: #94a3b8;">Auto-Reveal Native Blurs<br><span style="font-size: 9px; opacity: 0.8;">Bypasses extension blur and unblurs Reddit's native NSFW containers</span></label>
+      <input type="checkbox" id="autoRevealNative" class="toggle-switch">
+    </div>
+
+    <!-- Posting Controls -->
+    <div class="section-title">POSTING SAFETY</div>
+    <div class="control-row">
+      <label for="postCheckEnabled">Check Posts Before Submit</label>
+      <input type="checkbox" id="postCheckEnabled" class="toggle-switch">
+    </div>
+    <div class="control-row">
+      <label for="allowPostCreation">Allow Post Creation</label>
+      <input type="checkbox" id="allowPostCreation" class="toggle-switch">
+    </div>
+
+    <!-- Commenting Controls -->
+    <div class="section-title">COMMENTING SAFETY</div>
+    <div class="control-row">
+      <label for="commentCheckEnabled">Check Comments Before Submit</label>
+      <input type="checkbox" id="commentCheckEnabled" class="toggle-switch">
+    </div>
+    <div class="control-row">
+      <label for="allowCommentCreation">Allow Comment Creation</label>
+      <input type="checkbox" id="allowCommentCreation" class="toggle-switch">
+    </div>
+
+    <!-- Protection Mode -->
+    <div class="section-title">PROTECTION LEVEL</div>
+    <div class="radio-group">
+      <label class="radio-option">
+        <input type="radio" name="protectionLevel" value="warning" id="protWarning">
+        <span>Warning Mode</span>
+      </label>
+      <label class="radio-option">
+        <input type="radio" name="protectionLevel" value="strict" id="protStrict">
+        <span>Strict Blocking</span>
+      </label>
+    </div>
+
+    <!-- Temporary Overrides -->
+    <div class="section-title">TEMPORARY OVERRIDES</div>
+    <div class="button-group">
+      <button type="button" class="btn btn-secondary" id="btnTempPost">Enable Post Creation (10m)</button>
+      <button type="button" class="btn btn-secondary" id="btnTempComment">Enable Comment Creation (10m)</button>
+    </div>
+  </div>
+
+  <div class="footer">
+    <button type="button" class="btn-link" id="btnOpenOptions">⚙ Full Extension Settings</button>
+  </div>
+
+  <script src="../utils/browser-api.js"></script>
+  <script src="../utils/storage.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
