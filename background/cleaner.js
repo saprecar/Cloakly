@@ -23,6 +23,12 @@ const RedditCleaner = {
     // type: 'comments', 'submitted' (posts), 'saved', 'upvoted', 'downvoted'
     try {
       let url = `https://old.reddit.com/user/${encodeURIComponent(username)}/${type}/.json?limit=100`;
+      
+      // Saved items are safer to fetch from the root endpoint to avoid privacy 403s
+      if (type === 'saved') {
+        url = `https://old.reddit.com/saved/.json?limit=100`;
+      }
+
       if (after) {
         url += `&after=${after}`;
       }
@@ -47,6 +53,7 @@ const RedditCleaner = {
       const body = new URLSearchParams();
       body.append('id', itemId);
       body.append('uh', modhash);
+      body.append('api_type', 'json');
       
       if (action === 'vote') {
         body.append('dir', '0'); // 0 removes the vote
@@ -62,6 +69,16 @@ const RedditCleaner = {
         body: body.toString()
       });
 
+      const text = await res.text();
+      let json = {};
+      try { json = JSON.parse(text); } catch (e) {}
+
+      if (json && json.json && json.json.errors && json.json.errors.length > 0) {
+        console.error(`[Reddit Cleaner] API Error for ${action} on ${itemId}:`, json.json.errors);
+        return false;
+      }
+      
+      // If it doesn't return an error array, we assume success
       return res.ok;
     } catch (e) {
       console.error(`[Reddit Cleaner] Failed to perform ${action} on ${itemId}:`, e);
