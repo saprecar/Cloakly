@@ -1,0 +1,38 @@
+/* Reddit Privacy & Posting Safety Extension — Scrolling Only Mode (Explore Mode) */
+
+/* 
+ * These rules are aggressively applied when the user enables "Scrolling Only Mode".
+ * The extension adds the 'rs-scrolling-only' class to the body tag.
+ */
+
+body.rs-scrolling-only shreddit-post-share-button,
+body.rs-scrolling-only shreddit-comment-share-button,
+body.rs-scrolling-only shreddit-post-overflow-menu,
+body.rs-scrolling-only shreddit-comment-overflow-menu,
+body.rs-scrolling-only shreddit-post-comment-button,
+body.rs-scrolling-only shreddit-composer,
+body.rs-scrolling-only shreddit-post-composer,
+body.rs-scrolling-only button[upvote],
+body.rs-scrolling-only button[downvote],
+body.rs-scrolling-only button[data-click-id="upvote"],
+body.rs-scrolling-only button[data-click-id="downvote"],
+body.rs-scrolling-only faceplate-tracker[source="share"],
+body.rs-scrolling-only faceplate-tracker[source="post_action_menu"],
+body.rs-scrolling-only .icon-share,
+body.rs-scrolling-only .icon-comment,
+body.rs-scrolling-only [data-click-id="share"],
+body.rs-scrolling-only [data-click-id="save"],
+body.rs-scrolling-only button[aria-label*="upvote" i],
+body.rs-scrolling-only button[aria-label*="downvote" i],
+body.rs-scrolling-only button[aria-label*="reply" i],
+body.rs-scrolling-only button[aria-label*="share" i] {
+  display: none !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Also hide specific action bars completely if they don't have other content */
+body.rs-scrolling-only shreddit-comment-action-row {
+  display: none !important;
+}

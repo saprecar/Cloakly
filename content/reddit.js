@@ -15,6 +15,12 @@
     BlurManager.scanAndApply(currentSettings);
     PostChecker.init(currentSettings);
     PostChecker.checkStealthRemoval();
+    
+    if (currentSettings.scrollingOnlyMode) {
+      document.body.classList.add('rs-scrolling-only');
+    } else {
+      document.body.classList.remove('rs-scrolling-only');
+    }
   }
 
   // Shadowban check routine (runs once per 24 hours per session)

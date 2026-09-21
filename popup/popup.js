@@ -155,12 +155,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Bind toggles
-  const checkboxes = ['nsfwProtection', 'spoilerProtection', 'autoRevealNative', 'postCheckEnabled', 'allowPostCreation', 'commentCheckEnabled', 'allowCommentCreation'];
+  // Map popup UI IDs to actual setting keys
+  const checkboxMap = {
+    'popupNsfwProtection': 'nsfwProtection',
+    'popupSpoilerProtection': 'spoilerProtection',
+    'popupAutoRevealNative': 'autoRevealNative',
+    'popupPostCheckEnabled': 'postCheckEnabled',
+    'popupAllowPostCreation': 'allowPostCreation',
+    'popupCommentCheckEnabled': 'commentCheckEnabled',
+    'popupAllowCommentCreation': 'allowCommentCreation',
+    'popupScrollingOnlyMode': 'scrollingOnlyMode'
+  };
 
-  const nsfwEl = document.getElementById('nsfwProtection');
-  const spoilerEl = document.getElementById('spoilerProtection');
-  const autoRevealEl = document.getElementById('autoRevealNative');
+  const nsfwEl = document.getElementById('popupNsfwProtection') || document.getElementById('nsfwProtection');
+  const spoilerEl = document.getElementById('popupSpoilerProtection') || document.getElementById('spoilerProtection');
+  const autoRevealEl = document.getElementById('popupAutoRevealNative') || document.getElementById('autoRevealNative');
 
   function syncBlurToggles() {
     if (!nsfwEl || !spoilerEl || !autoRevealEl) return;

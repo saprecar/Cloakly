@@ -22,6 +22,7 @@ const DEFAULT_SETTINGS = {
   commentCheckEnabled: true,
   allowPostCreation: true,
   allowCommentCreation: true,
+  scrollingOnlyMode: false,
   postFilters: [], // Array of { id, subreddit, keyword }
   blockedSubreddits: [], // Array of strings (e.g., 'news', 'gaming')
 

@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Bind Boolean Checkbox Switches
   const checkboxKeys = [
-    'nsfwProtection', 'spoilerProtection',
+    'nsfwProtection', 'spoilerProtection', 'scrollingOnlyMode',
     'blurImages', 'blurVideos', 'blurGifs', 'blurThumbnails',
     'keepRevealed', 'reblurOnNavigation',
     'postCheckEnabled', 'commentCheckEnabled',

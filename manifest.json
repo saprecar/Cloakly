@@ -52,7 +52,8 @@
       ],
       "css": [
         "styles/blur.css",
-        "styles/warning.css"
+        "styles/warning.css",
+        "styles/scrolling-only.css"
       ],
       "js": [
         "utils/browser-api.js",
