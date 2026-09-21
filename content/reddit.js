@@ -8,6 +8,7 @@
 
   // Fetch initial stored settings
   let currentSettings = await StorageManager.getSettings();
+  document.dispatchEvent(new CustomEvent('rs-settings-update', { detail: currentSettings }));
 
   // Run initial scan & checks
   function runScan() {
