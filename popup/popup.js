@@ -245,44 +245,55 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnPost = document.getElementById('btnAllowPostCreation');
   const btnComment = document.getElementById('btnAllowCommentCreation');
 
-  function updateBtn(btn, isBlocked) {
+  function updateFeatureBtn(btn, isEnabled) {
     if (!btn) return;
-    if (isBlocked) {
-      btn.textContent = 'BLOCKED';
-      btn.className = 'status-btn blocked';
+    if (isEnabled) {
+      btn.textContent = 'ENABLED';
+      btn.className = 'status-btn unlocked'; // Re-use unlocked style (green)
     } else {
-      btn.textContent = 'UNLOCKED';
-      btn.className = 'status-btn unlocked';
+      btn.textContent = 'DISABLED';
+      btn.className = 'status-btn blocked'; // Re-use blocked style (red)
+    }
+  }
+
+  function updatePermissionBtn(btn, isAllowed) {
+    if (!btn) return;
+    if (isAllowed) {
+      btn.textContent = 'ALLOWED';
+      btn.className = 'status-btn unlocked'; // green
+    } else {
+      btn.textContent = 'BLOCKED';
+      btn.className = 'status-btn blocked'; // red
     }
   }
 
   if (btnExplore) {
-    updateBtn(btnExplore, settings.scrollingOnlyMode);
+    updateFeatureBtn(btnExplore, settings.scrollingOnlyMode);
     btnExplore.onclick = async () => {
       const newVal = !settings.scrollingOnlyMode;
       await StorageManager.updateSettings({ scrollingOnlyMode: newVal });
       settings.scrollingOnlyMode = newVal;
-      updateBtn(btnExplore, newVal);
+      updateFeatureBtn(btnExplore, newVal);
     };
   }
 
   if (btnPost) {
-    updateBtn(btnPost, !settings.allowPostCreation);
+    updatePermissionBtn(btnPost, settings.allowPostCreation);
     btnPost.onclick = async () => {
       const newVal = !settings.allowPostCreation;
       await StorageManager.updateSettings({ allowPostCreation: newVal });
       settings.allowPostCreation = newVal;
-      updateBtn(btnPost, !newVal);
+      updatePermissionBtn(btnPost, newVal);
     };
   }
 
   if (btnComment) {
-    updateBtn(btnComment, !settings.allowCommentCreation);
+    updatePermissionBtn(btnComment, settings.allowCommentCreation);
     btnComment.onclick = async () => {
       const newVal = !settings.allowCommentCreation;
       await StorageManager.updateSettings({ allowCommentCreation: newVal });
       settings.allowCommentCreation = newVal;
-      updateBtn(btnComment, !newVal);
+      updatePermissionBtn(btnComment, newVal);
     };
   }
 
