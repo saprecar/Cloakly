@@ -81,5 +81,16 @@
       "128": "icons/icon128.png"
     }
   },
-  "options_page": "options/options.html"
+  "options_page": "options/options.html",
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "content/inject-reveal.js"
+      ],
+      "matches": [
+        "*://*.reddit.com/*",
+        "*://reddit.com/*"
+      ]
+    }
+  ]
 }

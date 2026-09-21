@@ -18,31 +18,22 @@ const BlurManager = {
       const nativeBlurContainers = RedditDetector.queryDeepAll('shreddit-blurred-container, devvit2-blur-gate, community-highlight-card, .nsfw-prompt, .blur-overlay', postEl);
       if (nativeBlurContainers.length > 0) {
         
+        // Ensure the inject script is loaded once
+        if (!document.getElementById('rs-inject-script')) {
+          const s = document.createElement('script');
+          s.id = 'rs-inject-script';
+          // Need to use chrome.runtime.getURL (or browserAPI if available)
+          s.src = (typeof browserAPI !== 'undefined' ? browserAPI.runtime.getURL : chrome.runtime.getURL)('content/inject-reveal.js');
+          (document.head || document.documentElement).appendChild(s);
+        }
+
         nativeBlurContainers.forEach(container => {
            // Assign a unique ID to find this exact container in the main world
            const uniqueId = 'rs-blur-' + Math.random().toString(36).substr(2, 9);
            container.setAttribute('data-rs-auto-id', uniqueId);
            
-           // Inject a tiny script to toggle the Lit web component properties natively
-           const script = document.createElement('script');
-           script.textContent = `
-             (function() {
-                 var c = document.querySelector('[data-rs-auto-id="${uniqueId}"]');
-                 if (c) {
-                    // Exploit Lit reactive properties to natively reveal without clicking
-                    c.blurred = false;
-                    c.isBlurred = false;
-                    c._blur = false;
-                    c.revealed = true;
-                    c.removeAttribute('reason'); // Reddit's new enforcement
-                    
-                    // Cleanup
-                    c.removeAttribute('data-rs-auto-id');
-                 }
-             })();
-           `;
-           document.documentElement.appendChild(script);
-           script.remove();
+           // Dispatch event to the injected script
+           document.dispatchEvent(new CustomEvent('rs-reveal-native', { detail: { id: uniqueId } }));
         });
 
         postEl.dataset.rsTemporarilyRevealed = 'true';
