@@ -44,6 +44,9 @@ Their brilliant discovery of manipulating Lit Web Component reactive properties 
 ## Contributing
 Feel free to open issues or submit pull requests for bug fixes and feature enhancements!
 
+## Developer Notes
+If you are looking to contribute or understand the technical architecture behind features like bypassing Reddit's React/Lit components across different browser security sandboxes (Chrome MV3 vs Firefox Xray Vision), please read our [DEV_NOTES.md](DEV_NOTES.md).
+
 ## License and Disclaimer
 
 ### Dual-License (MIT / Commercial)
