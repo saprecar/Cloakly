@@ -236,17 +236,105 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnTempPost = document.getElementById('btnTempPost');
   const btnTempComment = document.getElementById('btnTempComment');
 
-  btnTempPost.addEventListener('click', async () => {
-    const until = Date.now() + 600000;
-    await StorageManager.updateSettings({ tempPostEnableUntil: until });
-    alert('Posting creation temporarily enabled for 10 minutes.');
-  });
+  if (btnTempPost) {
+    btnTempPost.addEventListener('click', async () => {
+      const until = Date.now() + 600000;
+      await StorageManager.updateSettings({ tempPostEnableUntil: until });
+      alert('Posting creation temporarily enabled for 10 minutes.');
+    });
+  }
 
-  btnTempComment.addEventListener('click', async () => {
-    const until = Date.now() + 600000;
-    await StorageManager.updateSettings({ tempCommentEnableUntil: until });
-    alert('Comment creation temporarily enabled for 10 minutes.');
-  });
+  if (btnTempComment) {
+    btnTempComment.addEventListener('click', async () => {
+      const until = Date.now() + 600000;
+      await StorageManager.updateSettings({ tempCommentEnableUntil: until });
+      alert('Comment creation temporarily enabled for 10 minutes.');
+    });
+  }
+
+  const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
+
+  // Cleaner UI Logic
+  const btnStartCleaner = document.getElementById('btnStartCleaner');
+  const btnStopCleaner = document.getElementById('btnStopCleaner');
+  const progressContainer = document.getElementById('cleanerProgressContainer');
+  const statusText = document.getElementById('cleanerStatusText');
+  const progressBar = document.getElementById('cleanerProgressBar');
+
+  if (btnStartCleaner && btnStopCleaner) {
+    // Check initial status
+    browserAPI.runtime.sendMessage({ action: 'GET_CLEANER_STATUS' }, (res) => {
+      if (res && res.isRunning) {
+        btnStartCleaner.style.display = 'none';
+        btnStopCleaner.style.display = 'block';
+        progressContainer.style.display = 'block';
+        statusText.textContent = 'Cleaner is currently running in background...';
+      }
+    });
+
+    btnStartCleaner.addEventListener('click', () => {
+      const username = document.getElementById('popupUsername').textContent;
+      if (!username || username.includes('Detecting') || username.includes('Manual')) {
+        alert('Please open Reddit to sync your account before cleaning.');
+        return;
+      }
+      
+      const typesToClean = [];
+      if (document.getElementById('cleanPosts').checked) typesToClean.push('posts');
+      if (document.getElementById('cleanComments').checked) typesToClean.push('comments');
+      if (document.getElementById('cleanSaved').checked) typesToClean.push('saved');
+      if (document.getElementById('cleanUpvoted').checked) typesToClean.push('upvoted');
+      if (document.getElementById('cleanDownvoted').checked) typesToClean.push('downvoted');
+
+      if (typesToClean.length === 0) {
+        alert('Please select at least one item type to clean.');
+        return;
+      }
+
+      const confirmation = prompt(`☢️ WARNING: This will PERMANENTLY delete your ${typesToClean.join(', ')}.\n\nTo confirm, type exactly: DELETE`);
+      if (confirmation !== 'DELETE') {
+        alert('Cancelled.');
+        return;
+      }
+
+      browserAPI.runtime.sendMessage({ action: 'START_CLEANER', username, typesToClean });
+      
+      btnStartCleaner.style.display = 'none';
+      btnStopCleaner.style.display = 'block';
+      progressContainer.style.display = 'block';
+      statusText.textContent = 'Starting cleaner...';
+      progressBar.style.width = '0%';
+    });
+
+    btnStopCleaner.addEventListener('click', () => {
+      browserAPI.runtime.sendMessage({ action: 'STOP_CLEANER' });
+      statusText.textContent = 'Cancelling (waiting for active request to finish)...';
+      btnStopCleaner.disabled = true;
+    });
+
+    // Listen for progress messages
+    browserAPI.runtime.onMessage.addListener((request) => {
+      if (request.action === 'CLEANER_PROGRESS') {
+        statusText.textContent = `${request.status} (Total Processed: ${request.count})`;
+        
+        // Very basic progress bar simulation (we don't know total items, so just pulse it)
+        let currentWidth = parseFloat(progressBar.style.width) || 0;
+        if (currentWidth >= 95) currentWidth = 0;
+        progressBar.style.width = request.isDone ? '100%' : (currentWidth + 5) + '%';
+        
+        if (request.isDone) {
+          btnStartCleaner.style.display = 'block';
+          btnStopCleaner.style.display = 'none';
+          btnStopCleaner.disabled = false;
+          if (request.error) {
+            progressBar.style.background = '#f59e0b'; // warning color
+          } else {
+            progressBar.style.background = '#22c55e'; // success color
+          }
+        }
+      }
+    });
+  }
 
   // Open Full Options
   document.getElementById('btnOpenOptions').addEventListener('click', () => {

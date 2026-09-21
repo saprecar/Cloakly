@@ -22,7 +22,8 @@
       "utils/browser-api.js",
       "utils/storage.js",
       "utils/logger.js",
-      "background/background.js"
+      "background/background.js",
+      "background/cleaner.js"
     ],
     "service_worker": "background/background.js"
   },

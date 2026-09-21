@@ -95,6 +95,30 @@
       <button type="button" class="btn btn-secondary" id="btnTempPost">Enable Post Creation (10m)</button>
       <button type="button" class="btn btn-secondary" id="btnTempComment">Enable Comment Creation (10m)</button>
     </div>
+
+    <!-- Account Cleaner -->
+    <div class="section-title" style="margin-top: 16px; color: #f87171;">☢️ ACCOUNT NUKE / CLEANER</div>
+    <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); padding: 10px; border-radius: 8px;">
+      <p style="font-size: 11px; color: #fca5a5; margin-bottom: 8px;">Permanently delete your account history.</p>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px;">
+        <label style="font-size: 11px;"><input type="checkbox" id="cleanPosts" checked> Posts</label>
+        <label style="font-size: 11px;"><input type="checkbox" id="cleanComments" checked> Comments</label>
+        <label style="font-size: 11px;"><input type="checkbox" id="cleanSaved" checked> Saved</label>
+        <label style="font-size: 11px;"><input type="checkbox" id="cleanUpvoted"> Upvoted</label>
+        <label style="font-size: 11px;"><input type="checkbox" id="cleanDownvoted"> Downvoted</label>
+      </div>
+
+      <div id="cleanerProgressContainer" style="display: none; margin-bottom: 10px;">
+        <div style="font-size: 10px; color: #94a3b8; margin-bottom: 4px;" id="cleanerStatusText">Processing...</div>
+        <div style="width: 100%; height: 4px; background: #334155; border-radius: 2px; overflow: hidden;">
+          <div id="cleanerProgressBar" style="width: 0%; height: 100%; background: #ef4444; transition: width 0.3s ease;"></div>
+        </div>
+      </div>
+      
+      <button type="button" id="btnStartCleaner" style="width: 100%; padding: 8px; background: #ef4444; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">START CLEANING</button>
+      <button type="button" id="btnStopCleaner" style="width: 100%; padding: 8px; background: #334155; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; display: none; margin-top: 6px;">STOP / CANCEL</button>
+    </div>
   </div>
 
   <div class="footer">
