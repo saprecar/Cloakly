@@ -19,15 +19,23 @@
     if (isFetchingUserStats || userStatsQueue.size === 0) return;
     isFetchingUserStats = true;
     
-    for (const username of Array.from(userStatsQueue)) {
+    while (userStatsQueue.size > 0) {
+      const username = Array.from(userStatsQueue)[0];
+      
       if (userStatsCache.has(username)) {
         userStatsQueue.delete(username);
         continue;
       }
       
       const stats = await RedditDetector.fetchOtherUserStats(username);
-      userStatsCache.set(username, stats); // stats is either object or null if failed
+      userStatsCache.set(username, stats); // stats is object, {rateLimited:true}, or null
       userStatsQueue.delete(username);
+      
+      if (stats && stats.rateLimited) {
+        // Pause processing for 5 seconds if rate limited
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        continue;
+      }
       
       // Trigger a re-injection if data was successfully fetched
       if (stats !== null) {

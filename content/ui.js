@@ -464,14 +464,22 @@ const UIManager = {
       // Ignore some common system routes
       if (['me', 'login', 'signup', 'submit', 'avatar'].includes(username.toLowerCase())) return;
 
+      // Skip avatar links (they usually contain imgs, svgs, or have no text)
+      const text = link.textContent.trim();
+      if (!text || link.querySelector('img, svg, shreddit-async-loader, [avatar]')) return;
+
       const cached = userStatsCache.get(username.toLowerCase());
       if (cached === undefined) {
-        // Not fetched yet
-        neededUsers.add(username);
+        // Not fetched yet - ONLY queue if it's within or near the viewport
+        const rect = link.getBoundingClientRect();
+        const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+        if (rect.top >= -1000 && rect.bottom <= windowHeight + 1000) {
+          neededUsers.add(username);
+        }
         return;
       }
       
-      if (cached === null) {
+      if (cached === null || cached.rateLimited) {
         // Fetched but failed/not found, mark as injected so we don't keep retrying
         link.dataset.rsUserStatsInjected = 'true';
         return;

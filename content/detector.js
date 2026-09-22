@@ -470,6 +470,9 @@ const RedditDetector = {
         if (parsed && parsed.accountAgeDays !== null) {
           return parsed;
         }
+      } else if (res.status === 429) {
+        Logger.warn(`Rate limited by Reddit API for u/${username}!`);
+        return { rateLimited: true };
       }
     } catch (e) {
       Logger.warn(`Failed to fetch stats for u/${username}:`, e);
