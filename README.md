@@ -9,7 +9,7 @@ A powerful browser extension designed to enhance your Reddit experience by givin
 - **Granular Interaction Blocks:** Lock down your account by individually allowing or blocking Post Creation and Comment Creation.
 - **Pre-Submission Safety Checker:** Checks community rules, Account Age, and Karma requirements *before* you post or comment, warning you of potential rejections.
 - **Shadowban & Ghosting Detector:** Automatically checks if your account is shadowbanned, and detects if your posts were silently ghosted (removed) by Reddit filters.
-- **Feed Filters & Subreddit Blocker:** Dynamically hide posts containing specific keywords, or completely block access to specific subreddits (redirects you to a safe page).
+- **Feed Filters & Subreddit Blocker:** Dynamically hide posts containing specific keywords, or completely block access to specific subreddits (redirects you to a safe page). Includes inline "⛔ Block Subreddit" buttons injected directly into your feed, hovercards, sidebar, and subreddit headers for instant one-click blocking without opening the popup.
 - **Custom Content Blurring:** Toggle blurs for NSFW and Spoiler posts individually.
 - **Auto-Reveal Native Blurs:** Automatically unblur Reddit's native NSFW and Spoiler images as you scroll, bypassing Reddit's strict click blocks.
 - **Account Nuke / Cleaner:** Permanently wipes your account history (Posts, Comments, Saved items, Upvotes, Downvotes) based on custom time ranges (Last hour, 24h, 7d, 30d, 1y, or custom dates).
