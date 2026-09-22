@@ -463,29 +463,35 @@ const UIManager = {
                 // Focus the editable div
                 textEl.focus();
                 
-                // Attempt to insert text securely
+                // Attempt to insert text securely into modern rich-text editors (Lexical/Tiptap)
                 try {
-                  const selection = window.getSelection();
-                  if (selection.rangeCount > 0) {
-                    const range = selection.getRangeAt(0);
-                    // Check if range is inside our textEl
-                    if (textEl.contains(range.commonAncestorContainer)) {
-                      range.deleteContents();
-                      const node = document.createTextNode(command + ' ');
-                      range.insertNode(node);
-                      range.setStartAfter(node);
-                      range.collapse(true);
+                  const root = textEl.getRootNode();
+                  const selection = (root && root.getSelection) ? root.getSelection() : window.getSelection();
+                  
+                  // Force selection to the end of the text box if focus was lost or outside
+                  if (!selection || selection.rangeCount === 0 || !textEl.contains(selection.focusNode)) {
+                    const range = document.createRange();
+                    range.selectNodeContents(textEl);
+                    range.collapse(false); // collapse to end
+                    if (selection) {
                       selection.removeAllRanges();
                       selection.addRange(range);
-                    } else {
-                      // Fallback if cursor not inside
-                      textEl.innerHTML += `<span>${command} </span>`;
                     }
-                  } else {
-                    textEl.innerHTML += `<span>${command} </span>`;
+                  }
+                  
+                  // Use native insertText so the editor's internal state captures it
+                  const success = document.execCommand('insertText', false, command + ' ');
+                  if (!success) {
+                    // Fallback to paste event
+                    const dt = new DataTransfer();
+                    dt.setData('text/plain', command + ' ');
+                    textEl.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
                   }
                 } catch (e) {
-                   textEl.innerHTML += `<span>${command} </span>`;
+                  // Fallback for strict shadow DOMs
+                  const dt = new DataTransfer();
+                  dt.setData('text/plain', command + ' ');
+                  textEl.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
                 }
               }
               // Trigger input events
