@@ -121,6 +121,11 @@
         }
       });
     }
+
+    // Inject inline block buttons
+    if (typeof UIManager !== 'undefined' && UIManager.injectInlineBlockButtons) {
+      UIManager.injectInlineBlockButtons(currentSettings);
+    }
   }
 
   // Shadowban check routine (runs once per 24 hours per session)

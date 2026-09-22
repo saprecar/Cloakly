@@ -297,6 +297,113 @@ const UIManager = {
     }
   },
 
+  /**
+   * Scans the DOM and injects inline "Block Subreddit" buttons into posts and subreddit headers.
+   */
+  injectInlineBlockButtons(settings) {
+    if (!settings) return;
+    const blockedSubs = settings.blockedSubreddits || [];
+
+    // Helper to handle blocking
+    const handleBlock = async (subreddit, btn) => {
+      if (!subreddit) return;
+      const sub = subreddit.toLowerCase().replace(/^r\//, '');
+      
+      const currentSettings = await StorageManager.getSettings();
+      let currentBlocked = currentSettings.blockedSubreddits || [];
+      
+      if (!currentBlocked.includes(sub)) {
+        currentBlocked.push(sub);
+        await StorageManager.updateSettings({ blockedSubreddits: currentBlocked });
+      }
+
+      // Visually indicate success
+      btn.innerText = '⛔ Blocked';
+      btn.style.background = '#7f1d1d';
+      btn.style.color = '#fca5a5';
+      btn.style.borderColor = '#991b1b';
+
+      // Immediately hide any posts from this subreddit in the current feed
+      document.querySelectorAll('shreddit-post').forEach(post => {
+        const postSub = post.getAttribute('subreddit-prefixed-name');
+        if (postSub && postSub.toLowerCase() === `r/${sub}`) {
+          post.style.display = 'none';
+        }
+      });
+
+      // If we are currently ON the subreddit page, redirect to home
+      if (window.location.pathname.toLowerCase().startsWith(`/r/${sub}/`)) {
+        window.location.replace('https://www.reddit.com/?rs_blocked=sub');
+      }
+    };
+
+    // 1. Inject into Feed Posts
+    document.querySelectorAll('shreddit-post').forEach(post => {
+      if (post.dataset.rsBlockBtnInjected === 'true') return;
+      
+      const subreddit = post.getAttribute('subreddit-prefixed-name');
+      if (!subreddit) return; // Promoted posts or users might not have this
+
+      const subName = subreddit.toLowerCase().replace(/^r\//, '');
+      if (blockedSubs.includes(subName)) {
+        // If it's already blocked, it will be hidden by blocker.js or the logic above, but just in case:
+        post.style.display = 'none';
+        return;
+      }
+
+      // Find a good place to inject. The post credit bar is a good spot.
+      const creditBar = post.querySelector('[slot="credit-bar"]');
+      if (!creditBar) return;
+      
+      // Look for the subreddit link to place it next to
+      const subLink = creditBar.querySelector(`a[href^="/r/${subName}/" i]`);
+      if (subLink && !subLink.parentElement.querySelector('.rs-inline-block-btn')) {
+        const btn = document.createElement('button');
+        btn.className = 'rs-inline-block-btn';
+        btn.title = `Block r/${subName}`;
+        btn.innerText = '⛔';
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          handleBlock(subName, btn);
+        });
+        subLink.parentElement.insertBefore(btn, subLink.nextSibling);
+        post.dataset.rsBlockBtnInjected = 'true';
+      }
+    });
+
+    // 2. Inject into Subreddit Page Header
+    const subHeader = document.querySelector('shreddit-subreddit-header');
+    if (subHeader && subHeader.dataset.rsBlockBtnInjected !== 'true') {
+      // Find the subreddit name from the header title or URL
+      const pathMatch = window.location.pathname.match(/^\/r\/([^\/]+)/i);
+      if (pathMatch) {
+        const subName = pathMatch[1].toLowerCase();
+        
+        // Wait for shadowRoot to be available (sometimes it takes a moment)
+        if (subHeader.shadowRoot) {
+          const actionButtons = subHeader.shadowRoot.querySelector('.action-buttons, [slot="primary-actions"], [slot="secondary-actions"], shreddit-join-button');
+          if (actionButtons) {
+            const container = actionButtons.parentElement || actionButtons;
+            
+            const btn = document.createElement('button');
+            btn.className = 'rs-inline-block-btn header-btn';
+            btn.innerText = '⛔ Block Subreddit';
+            btn.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleBlock(subName, btn);
+            });
+            
+            // Insert before the join button if possible
+            container.insertBefore(btn, actionButtons);
+            subHeader.dataset.rsBlockBtnInjected = 'true';
+          }
+        }
+      }
+    }
+  },
+
   escapeHtml(str) {
     if (!str) return '';
     return String(str)
