@@ -18,4 +18,4 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 **Use at Your Own Risk:** This extension automates actions and modifies content on Reddit. The authors are not responsible for any account bans, suspensions, data loss, or other consequences that may arise from the use of this Software. 
 
-**Not Affiliated with Reddit:** This extension is an independent, unofficial tool and is **NOT** affiliated with, endorsed by, or sponsored by Reddit Inc. in any way. "Reddit" and the Reddit logo are registered trademarks of Reddit Inc.
+**Not Affiliated with Reddit:** This project is independent and is not affiliated with or endorsed by Reddit Inc.; all third-party names, trademarks, logos, and assets belong to their respective owners.
