@@ -73,12 +73,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             btnSync.textContent = '✓';
             setTimeout(() => { btnSync.textContent = 'Sync'; }, 2000);
           } else {
-            alert(`Reddit user u/${uname} not found (HTTP ${res.status}).`);
-            btnSync.textContent = 'Sync';
+            userStatsEl.textContent = `User u/${uname} not found (HTTP ${res.status})`;
+            userStatsEl.style.color = '#ef4444';
+            btnSync.textContent = '✗';
+            setTimeout(() => { btnSync.textContent = 'Sync'; userStatsEl.style.color = ''; }, 3000);
           }
         } catch (err) {
-          alert('Failed to sync profile: ' + err.message);
-          btnSync.textContent = 'Sync';
+          userStatsEl.textContent = 'Sync failed: ' + err.message;
+          userStatsEl.style.color = '#ef4444';
+          btnSync.textContent = '✗';
+          setTimeout(() => { btnSync.textContent = 'Sync'; userStatsEl.style.color = ''; }, 3000);
         }
       });
     }
@@ -120,10 +124,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       // Allow manual click to force check (bypasses cache)
-      healthCard.addEventListener('click', async () => {
+      healthCard.addEventListener('click', async (e) => {
         const uname = settings.lastDetectedUser?.username || settings.manualUsername;
         if (!uname) {
-          alert('Please wait for a username to be detected first.');
+          if (e && e.isTrusted) { // Only show message if user actually clicked
+             healthStatusText.textContent = 'Wait for user sync first';
+             healthStatusText.style.color = '#f59e0b';
+          }
           return;
         }
 
@@ -134,7 +141,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         healthStatusText.style.color = '#94a3b8';
 
         const api = typeof browser !== 'undefined' ? browser : chrome;
-        api.runtime.sendMessage({ action: 'CHECK_SHADOWBAN', username: uname }, async (res) => {
+        try {
+          const res = await browserAPI.runtime.sendMessage({ action: 'CHECK_SHADOWBAN', username: uname });
           if (res && res.success) {
             await StorageManager.updateSettings({
               isShadowbanned: !!res.isShadowbanned,
@@ -145,7 +153,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             healthStatusText.textContent = res?.error || 'Check failed';
             healthStatusText.style.color = '#ef4444';
           }
-        });
+        } catch (e) {
+          healthStatusText.textContent = 'Check failed';
+          healthStatusText.style.color = '#ef4444';
+        }
       });
       
       // Auto-trigger if it has NEVER been checked
@@ -335,7 +346,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnTempPost.addEventListener('click', async () => {
       const until = Date.now() + 600000;
       await StorageManager.updateSettings({ tempPostEnableUntil: until });
-      alert('Posting creation temporarily enabled for 10 minutes.');
+      btnTempPost.textContent = '✓ Enabled for 10m';
+      setTimeout(() => { btnTempPost.textContent = 'Enable Post Creation (10m)'; }, 2000);
     });
   }
 
@@ -343,7 +355,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnTempComment.addEventListener('click', async () => {
       const until = Date.now() + 600000;
       await StorageManager.updateSettings({ tempCommentEnableUntil: until });
-      alert('Comment creation temporarily enabled for 10 minutes.');
+      btnTempComment.textContent = '✓ Enabled for 10m';
+      setTimeout(() => { btnTempComment.textContent = 'Enable Comment Creation (10m)'; }, 2000);
     });
   }
 
@@ -373,7 +386,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       const keyword = popupFilterKeyword.value.trim().toLowerCase();
 
       if (!sub && !keyword) {
-        alert('Please enter a subreddit, a keyword, or both.');
+        btnPopupAddFilter.textContent = 'Enter sub or keyword!';
+        btnPopupAddFilter.style.background = '#ef4444';
+        setTimeout(() => { btnPopupAddFilter.textContent = '+ ADD FILTER'; btnPopupAddFilter.style.background = '#3b82f6'; }, 2000);
         return;
       }
 
@@ -402,7 +417,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnPopupBlockSub.addEventListener('click', async () => {
       let sub = popupFilterSubreddit.value.trim().toLowerCase().replace(/^r\//, '');
       if (!sub) {
-        alert('Please enter a subreddit name in the first box to block it entirely.');
+        btnPopupBlockSub.textContent = 'Enter sub name!';
+        setTimeout(() => { btnPopupBlockSub.textContent = '⛔ BLOCK SUB'; }, 2000);
         return;
       }
 
@@ -451,7 +467,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnStartCleaner.addEventListener('click', () => {
       const username = document.getElementById('popupUsername').textContent;
       if (!username || username.includes('Detecting') || username.includes('Manual')) {
-        alert('Please open Reddit to sync your account before cleaning.');
+        statusText.textContent = 'Please open Reddit and sync your account first.';
+        statusText.style.color = '#f59e0b';
         return;
       }
       
@@ -463,7 +480,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (document.getElementById('cleanDownvoted').checked) typesToClean.push('downvoted');
 
       if (typesToClean.length === 0) {
-        alert('Please select at least one item type to clean.');
+        statusText.textContent = 'Select at least one item type.';
+        statusText.style.color = '#f59e0b';
         return;
       }
 
@@ -475,14 +493,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         dateStart = document.getElementById('cleanerDateStart').value;
         dateEnd = document.getElementById('cleanerDateEnd').value;
         if (!dateStart && !dateEnd) {
-          alert('Please select at least one date for the custom range.');
+          statusText.textContent = 'Select at least one date for custom range.';
+          statusText.style.color = '#f59e0b';
           return;
         }
       }
 
       const confirmation = prompt(`☢️ WARNING: This will PERMANENTLY delete your ${typesToClean.join(', ')}.\n\nTo confirm, type exactly: DELETE`);
       if (confirmation !== 'DELETE') {
-        alert('Cancelled.');
+        statusText.textContent = 'Cancelled — type DELETE to confirm.';
         return;
       }
 

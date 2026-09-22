@@ -37,3 +37,19 @@ Modern Reddit uses aggressive DOM virtualization (re-using the same DOM nodes fo
 We implemented strict lifecycle tracking and cleanup in `content/ui.js`:
 1. **Sibling-Based Injection:** The safety guide is now strictly injected as a controlled sibling relative to the composer box, ensuring predictable placement.
 2. **Orphan Cleanup Routine:** Before attaching a new card, the UI manager actively scans for and destroys "orphaned" safety cards that no longer correspond to the currently active active element, preventing the virtualized DOM from accumulating stale UI components.
+
+## Firefox Manifest V3 & Strictness Quirks
+
+### 1. The `service_worker` Rejection
+When attempting to make a unified `manifest.json` for both Chrome and Firefox MV3, we originally included both `background.scripts` and `background.service_worker`.
+- **The Issue:** Firefox's strict schema validator explicitly rejected the manifest completely (`Protocol error: background.service_worker is currently disabled. Add background.scripts`).
+- **The Fix:** We had to completely remove `"service_worker"` from the manifest for Firefox testing. (For production, separate build steps or a dynamic manifest compiler should be used to output `service_worker` for Chrome and `scripts` for Firefox).
+
+### 2. The Sequential Execution Abort (Content Scripts)
+- **The Issue:** A missing method signature (`_applyFilter`) in `content/filter.js` caused a syntax error. Chrome natively ignored the bad file and continued injecting `post-checker.js` and `reddit.js` from the `content_scripts` array. However, Firefox completely aborted the script chain upon hitting the syntax error.
+- **The Result:** The extension appeared "dead" on Firefox (because `reddit.js` never ran), while Chrome worked fine (except for the broken filter feature).
+- **The Fix:** Always run `node -c` on all content scripts to catch fatal syntax errors, as Firefox's strict sequential execution will crash the entire extension initialization.
+
+### 3. Strict Promise Requirements for `browser.runtime.sendMessage`
+- **The Issue:** The native Firefox API (`browser.runtime`) enforces Promises and actively rejects the trailing callback signature for `sendMessage` (`browser.runtime.sendMessage(msg, callback)`), which throws an error.
+- **The Fix:** We wrapped all messaging calls in a unified `browserAPI` polyfill that guarantees Promise resolution natively and drops the callback pattern entirely.

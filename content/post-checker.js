@@ -107,7 +107,12 @@ const PostChecker = {
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
-        alert(`🔒 ${type === 'post' ? 'Post' : 'Comment'} creation is currently disabled by Reddit Safety Extension.`);
+        // Show non-blocking banner instead of alert() (Firefox freezes on alert in content scripts)
+        const banner = document.createElement('div');
+        banner.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#ef4444;color:white;padding:12px 24px;border-radius:8px;font-weight:bold;z-index:2147483647;font-family:sans-serif;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+        banner.textContent = `🔒 ${type === 'post' ? 'Post' : 'Comment'} creation is disabled by Reddit Safety Extension.`;
+        document.body.appendChild(banner);
+        setTimeout(() => banner.remove(), 4000);
         return;
       }
 
@@ -145,13 +150,37 @@ const PostChecker = {
         }
       }
 
+      // Attempt to extract real title and text from composer
+      let title = '';
+      let text = '';
+      let flairSelected = false;
+      let linksCount = 0;
+
+      if (type === 'post') {
+        const titleEl = document.querySelector('input[name="title"], textarea[name="title"], [name="title"]');
+        if (titleEl) title = titleEl.value || titleEl.innerText || '';
+        
+        // Flair selection detection (heuristic)
+        const flairPicker = document.querySelector('shreddit-composer-flair-picker, [data-testid="flair-picker"]');
+        if (flairPicker && flairPicker.hasAttribute('selected-flair-id')) {
+          flairSelected = true;
+        } else if (document.querySelector('shreddit-composer-flair-badge, .flair-badge')) {
+          flairSelected = true;
+        }
+      } else {
+        const textEl = btn.closest('form, shreddit-composer, .commentarea')?.querySelector('textarea, [contenteditable="true"]');
+        if (textEl) {
+          text = textEl.value || textEl.innerText || '';
+        }
+      }
+
       const submissionDetails = {
         subreddit,
         type,
-        title: '',
-        text: '',
-        flairSelected: false,
-        linksCount: 0
+        title,
+        text,
+        flairSelected,
+        linksCount: (text.match(/https?:\/\//gi) || []).length
       };
 
       const evaluation = RuleEngine.evaluate(accountInfo, submissionDetails, parsedRules);

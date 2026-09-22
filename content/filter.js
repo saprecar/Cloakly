@@ -38,9 +38,7 @@ const FilterManager = {
 
       // Check if this post is from a completely blocked subreddit
       if (postSub && blockedSubs.includes(postSub)) {
-        postEl.dataset.rsFiltered = 'true';
-        postEl.style.display = 'none';
-        // Do not add a placeholder for completely blocked subreddits
+        this._applyFilter(postEl, `Subreddit blocked (r/${postSub})`);
         return; // Move to next post
       }
 
@@ -60,34 +58,65 @@ const FilterManager = {
 
         if (subMatch && keyMatch) {
           // Rule matched, hide the post
-          postEl.dataset.rsFiltered = 'true';
-          postEl.style.display = 'none';
-
-          // Create a placeholder with an undo button
-          const placeholder = document.createElement('div');
-          placeholder.style.cssText = 'padding: 8px 12px; margin: 8px 0; background: rgba(30, 41, 59, 0.5); border: 1px dashed rgba(100, 116, 139, 0.5); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #94a3b8; font-family: sans-serif;';
+          let reasonText = 'Keyword filter';
+          if (filter.keyword) reasonText += ` ("${filter.keyword}")`;
           
-          let reasonText = 'Post hidden by your filter';
-          if (filter.keyword) reasonText += ` (Keyword: "${filter.keyword}")`;
-          
-          placeholder.innerHTML = `
-            <span>${reasonText}</span>
-            <button class="rs-undo-filter-btn" style="background: transparent; border: 1px solid #475569; color: #cbd5e1; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px;">Show Anyway</button>
-          `;
-
-          const undoBtn = placeholder.querySelector('.rs-undo-filter-btn');
-          undoBtn.addEventListener('click', () => {
-            postEl.style.display = ''; // Restore original display
-            placeholder.remove(); // Remove placeholder
-          });
-
-          // Insert placeholder right before the hidden post
-          postEl.parentNode.insertBefore(placeholder, postEl);
-
+          this._applyFilter(postEl, reasonText);
           break; // Stop checking other rules for this post
         }
       }
     });
+  },
+
+  /**
+   * Hides a post and inserts an individual "Post hidden" banner in its exact
+   * spot - styled after Reddit's own native hide-post pattern (image 3 in
+   * conversation: one hidden post = one banner with Undo, right where that
+   * post was). No merging/stacking across posts, so blocks never pile up
+   * together at one spot in the feed regardless of how many are blocked.
+   * @param {HTMLElement} postEl
+   * @param {string} reasonText
+   */
+  _applyFilter(postEl, reasonText) {
+    postEl.dataset.rsFiltered = 'true';
+    postEl.style.display = 'none';
+
+    // Hide parent article to prevent huge blank margins
+    let parentToHide = null;
+    if (postEl.tagName === 'SHREDDIT-POST' && postEl.parentElement && postEl.parentElement.tagName === 'ARTICLE') {
+      parentToHide = postEl.parentElement;
+      parentToHide.dataset.rsFiltered = 'true';
+      parentToHide.style.display = 'none';
+    }
+
+    // Hide any trailing spacer (like <hr> or tracking divs) to prevent massive gray gaps
+    let spacerToHide = null;
+    const nextEl = (parentToHide || postEl).nextElementSibling;
+    if (nextEl && ['HR', 'FACEPLATE-TRACKER'].includes(nextEl.tagName)) {
+      spacerToHide = nextEl;
+      spacerToHide.style.display = 'none';
+    }
+
+    const placeholder = document.createElement('div');
+    placeholder.className = 'rs-filter-placeholder';
+    placeholder.dataset.rsReason = reasonText;
+    placeholder.style.cssText = 'padding: 12px 16px; margin: 0; background: transparent; border-bottom: 1px solid rgba(71, 85, 105, 0.3); display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #94a3b8; font-family: sans-serif;';
+
+    placeholder.innerHTML = `
+      <span class="rs-placeholder-text">Post hidden: ${reasonText}</span>
+      <button class="rs-undo-filter-btn" style="background: transparent; border: none; color: #4fbcff; padding: 4px 8px; cursor: pointer; font-size: 13px; font-weight: 600; white-space: nowrap; margin-left: 8px;">Undo</button>
+    `;
+
+    const undoBtn = placeholder.querySelector('.rs-undo-filter-btn');
+    undoBtn.addEventListener('click', () => {
+      postEl.style.display = '';
+      if (parentToHide) parentToHide.style.display = '';
+      if (spacerToHide) spacerToHide.style.display = '';
+      placeholder.remove();
+    });
+
+    const insertTarget = parentToHide || postEl;
+    insertTarget.parentNode.insertBefore(placeholder, insertTarget);
   },
 
   escapeRegExp(string) {

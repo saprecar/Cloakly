@@ -4,8 +4,41 @@
  */
 
 (async () => {
-  // Only run on HTML pages
-  if (document.contentType !== 'text/html') return;
+  // Only run on HTML pages (contentType may be undefined at document_start in some browsers)
+  if (document.contentType && document.contentType !== 'text/html') return;
+
+  const api = typeof browser !== 'undefined' ? browser : chrome;
+
+  // Inject auto-reveal.js into the MAIN world dynamically
+  // This replaces the removed 'world: MAIN' manifest entry for Firefox compatibility
+  try {
+    const scriptUrl = api.runtime.getURL('content/auto-reveal.js');
+    const s = document.createElement('script');
+    s.src = scriptUrl;
+    s.type = 'text/javascript';
+    // Use documentElement since head may not exist at document_start
+    (document.head || document.documentElement).appendChild(s);
+    s.onload = () => s.remove();
+    s.onerror = () => {
+      // Fallback: If CSP blocks external script, inject content inline
+      s.remove();
+      try {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', scriptUrl, false); // synchronous
+        xhr.send();
+        if (xhr.status === 200) {
+          const inline = document.createElement('script');
+          inline.textContent = xhr.responseText;
+          (document.head || document.documentElement).appendChild(inline);
+          inline.remove();
+        }
+      } catch (e2) {
+        console.warn('[Reddit Safety] Auto-reveal injection failed entirely:', e2);
+      }
+    };
+  } catch (e) {
+    console.warn('[Reddit Safety] Failed to inject auto-reveal script:', e);
+  }
 
   const url = new URL(window.location.href);
   const path = url.pathname.toLowerCase();
@@ -15,8 +48,6 @@
   if (!match) return;
 
   const currentSub = match[1];
-
-  const api = typeof browser !== 'undefined' ? browser : chrome;
   
   try {
     const rawStorage = await api.storage.local.get(null);

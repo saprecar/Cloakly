@@ -7,9 +7,11 @@ A powerful browser extension designed to enhance your Reddit experience by givin
 - **Multi-Account Profiles:** Settings are saved on a per-account basis. When you switch Reddit accounts, your personalized safety configurations switch with you instantly.
 - **Explore Mode (Read-Only):** Aggressively blocks and hides all interaction buttons (Upvote, Downvote, Comment, Share) to prevent accidental engagement while scrolling.
 - **Granular Interaction Blocks:** Lock down your account by individually allowing or blocking Post Creation and Comment Creation.
-- **Pre-Submission Safety Checker:** Checks community rules, Account Age, and Karma requirements *before* you post or comment, warning you of potential rejections.
+- **Pre-Submission Safety Checker:** Checks community rules, Account Age, and Karma requirements *before* you post or comment, warning you of potential rejections. Now strictly enforces missing Tags and Post Flairs.
+- **Inline User Stats Badge:** Shows quick, beautiful stats badges (Karma & Account Age) directly next to other users' names in your feed, comment section, and chat without needing to visit their profile. Fully customizable via the popup.
+- **Distraction Blocking (Zen Mode):** Keep your feed clean by hiding annoying elements like Promoted Posts (Ads), the Chat button, and the Notifications inbox.
 - **Shadowban & Ghosting Detector:** Automatically checks if your account is shadowbanned, and detects if your posts were silently ghosted (removed) by Reddit filters.
-- **Feed Filters & Subreddit Blocker:** Dynamically hide posts containing specific keywords, or completely block access to specific subreddits (redirects you to a safe page). Includes inline "⛔ Block Subreddit" buttons injected directly into your feed, hovercards, sidebar, and subreddit headers for instant one-click blocking without opening the popup.
+- **Feed Filters & Subreddit Blocker:** Dynamically hide posts containing specific keywords, or completely block access to specific subreddits. Includes inline "⛔ Block Subreddit" buttons injected seamlessly into your feed and subreddit headers for instant one-click blocking.
 - **Custom Content Blurring:** Toggle blurs for NSFW and Spoiler posts individually.
 - **Auto-Reveal Native Blurs:** Automatically unblur Reddit's native NSFW and Spoiler images as you scroll, bypassing Reddit's strict click blocks.
 - **Account Nuke / Cleaner:** Permanently wipes your account history (Posts, Comments, Saved items, Upvotes, Downvotes) based on custom time ranges (Last hour, 24h, 7d, 30d, 1y, or custom dates).

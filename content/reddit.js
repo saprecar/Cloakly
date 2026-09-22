@@ -21,14 +21,15 @@
     
     while (userStatsQueue.size > 0) {
       const username = Array.from(userStatsQueue)[0];
+      const userLower = username.toLowerCase();
       
-      if (userStatsCache.has(username)) {
+      if (userStatsCache.has(userLower)) {
         userStatsQueue.delete(username);
         continue;
       }
       
       const stats = await RedditDetector.fetchOtherUserStats(username);
-      userStatsCache.set(username, stats); // stats is object, {rateLimited:true}, or null
+      userStatsCache.set(userLower, stats); // Always store with lowercase key
       userStatsQueue.delete(username);
       
       if (stats && stats.rateLimited) {
@@ -50,6 +51,80 @@
   }
 
   function runScan() {
+    // 1. Check for SPA navigation to blocked subreddits or restricted pages
+    if (currentSettings) {
+      const path = window.location.pathname.toLowerCase();
+      
+      // A. Check Post Creation
+      const blockPostCreation = typeof StorageManager !== 'undefined' ? !StorageManager.isPostCreationAllowed(currentSettings) : !currentSettings.allowPostCreation;
+      if (blockPostCreation && (path.includes('/submit') || (path.includes('/r/') && path.endsWith('/submit')))) {
+        window.location.replace('https://www.reddit.com/?rs_blocked=post');
+        return;
+      }
+
+      // B. Check Subreddit Blocking
+      const match = path.match(/^\/r\/([^\/]+)/);
+      if (match) {
+        const currentSub = match[1];
+        const blockedSubs = currentSettings.blockedSubreddits || [];
+        if (blockedSubs.includes(currentSub)) {
+          // We navigated to a blocked sub via SPA!
+          // Force replace the DOM to match the hard-blocker's UI.
+          document.documentElement.innerHTML = `
+            <html>
+              <head>
+                <title>Blocked Subreddit</title>
+                <style>
+                  body {
+                    background-color: #0f172a;
+                    color: #f8fafc;
+                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    height: 100vh;
+                    margin: 0;
+                    text-align: center;
+                  }
+                  .container {
+                    background-color: #1e293b;
+                    padding: 40px;
+                    border-radius: 12px;
+                    border: 1px solid #334155;
+                    max-width: 500px;
+                    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+                  }
+                  h1 { color: #ef4444; margin-top: 0; }
+                  p { color: #94a3b8; font-size: 16px; line-height: 1.5; margin-bottom: 24px; }
+                  .btn {
+                    background-color: #3b82f6;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 6px;
+                    font-size: 14px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    text-decoration: none;
+                  }
+                  .btn:hover { background-color: #2563eb; }
+                </style>
+              </head>
+              <body>
+                <div class="container">
+                  <h1>⛔ Access Denied</h1>
+                  <p>You have blocked access to <strong>r/${currentSub}</strong> on this profile.</p>
+                  <button class="btn" onclick="window.location.href='https://www.reddit.com/';">Go Home</button>
+                </div>
+              </body>
+            </html>
+          `;
+          return; // Stop scanning
+        }
+      }
+    }
+
     if (typeof FilterManager !== 'undefined') FilterManager.scanAndApply(currentSettings);
     BlurManager.scanAndApply(currentSettings);
     PostChecker.init(currentSettings);
@@ -212,9 +287,21 @@
     let shouldScan = false;
     for (const m of mutations) {
       if (m.addedNodes && m.addedNodes.length > 0) {
-        shouldScan = true;
-        break;
+        for (const node of m.addedNodes) {
+          if (node.nodeType === 1) { // ELEMENT_NODE
+            if (!node.id || !node.id.startsWith('rs-')) {
+              shouldScan = true;
+              break;
+            }
+          } else if (node.nodeType === 3) { // TEXT_NODE
+            if (node.textContent.trim() !== '') {
+              shouldScan = true;
+              break;
+            }
+          }
+        }
       }
+      if (shouldScan) break;
     }
 
     if (shouldScan) {

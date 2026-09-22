@@ -405,13 +405,8 @@ const RedditDetector = {
 
       // Step B: Delegate to background service worker (with host_permissions)
       try {
-        const bgApi = typeof browser !== 'undefined' ? browser : chrome;
-        if (bgApi?.runtime?.sendMessage) {
-          const bgResponse = await new Promise((resolve) => {
-            bgApi.runtime.sendMessage({ action: 'FETCH_REDDIT_USER', username }, (resp) => {
-              resolve(resp);
-            });
-          });
+        if (typeof browserAPI !== 'undefined' && browserAPI.runtime) {
+          const bgResponse = await browserAPI.runtime.sendMessage({ action: 'FETCH_REDDIT_USER', username });
 
           if (bgResponse && bgResponse.success && bgResponse.data) {
             const parsed = this.parseRedditUserData(bgResponse.data);
@@ -428,13 +423,8 @@ const RedditDetector = {
     } else {
       // Step C: Try asking background worker for session endpoint as fallback
       try {
-        const bgApi = typeof browser !== 'undefined' ? browser : chrome;
-        if (bgApi?.runtime?.sendMessage) {
-          const bgResponse = await new Promise((resolve) => {
-            bgApi.runtime.sendMessage({ action: 'FETCH_REDDIT_USER' }, (resp) => {
-              resolve(resp);
-            });
-          });
+        if (typeof browserAPI !== 'undefined' && browserAPI.runtime) {
+          const bgResponse = await browserAPI.runtime.sendMessage({ action: 'FETCH_REDDIT_USER' });
 
           if (bgResponse && bgResponse.success && bgResponse.data) {
             const parsed = this.parseRedditUserData(bgResponse.data);

@@ -67,7 +67,7 @@ const DEFAULT_SETTINGS = {
 const StorageManager = {
   async getSettings() {
     try {
-      const stored = await browserAPI.storage.get(null);
+      const stored = await browserAPI.storage.local.get(null);
 
       // --- MIGRATION: V1 (Flat) to V2 (Profiles) ---
       if (!stored.profiles) {
@@ -85,7 +85,7 @@ const StorageManager = {
         stored.ruleCache = stored.ruleCache || {};
         
         // Save the migrated data back to raw storage
-        await browserAPI.storage.set(stored);
+        await browserAPI.storage.local.set(stored);
       }
 
       // Determine active profile
@@ -106,7 +106,7 @@ const StorageManager = {
 
   async updateSettings(newSettings) {
     try {
-      const stored = await browserAPI.storage.get(null);
+      const stored = await browserAPI.storage.local.get(null);
       
       // Ensure V2 structure exists
       if (!stored.profiles) {
@@ -167,7 +167,7 @@ const StorageManager = {
       };
 
       // Save raw nested structure back to storage
-      await browserAPI.storage.set(stored);
+      await browserAPI.storage.local.set(stored);
       return true;
     } catch (err) {
       console.error('[Reddit Safety] Storage update error:', err);

@@ -323,13 +323,12 @@ const UIManager = {
       btn.style.color = '#fca5a5';
       btn.style.borderColor = '#991b1b';
 
-      // Immediately hide any posts from this subreddit in the current feed
-      document.querySelectorAll('shreddit-post').forEach(post => {
-        const postSub = post.getAttribute('subreddit-prefixed-name');
-        if (postSub && postSub.toLowerCase() === `r/${sub}`) {
-          post.style.display = 'none';
-        }
-      });
+      // FilterManager will automatically catch the storage update, but to make it feel INSTANT
+      // without waiting for the background sync, we force a scan immediately!
+      if (typeof FilterManager !== 'undefined') {
+        currentSettings.blockedSubreddits = currentBlocked;
+        FilterManager.scanAndApply(currentSettings);
+      }
 
       // If we are currently ON the subreddit page, redirect to home
       if (window.location.pathname.toLowerCase().startsWith(`/r/${sub}/`)) {
@@ -355,8 +354,9 @@ const UIManager = {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
+        e.stopImmediatePropagation();
         handleBlock(subName, btn);
-      });
+      }, true);
 
       // Fix for sidebar or other block-level wrappers: make parent flex so it doesn't wrap to a new line
       if (!isHeader && target.parentElement) {
@@ -420,7 +420,10 @@ const UIManager = {
         }
       });
 
-      const titleEl = allH1s.find(h1 => (h1.textContent || '').toLowerCase().includes(`r/${subName}`));
+      const titleEl = allH1s.find(h1 => {
+        const text = (h1.textContent || '').toLowerCase().trim();
+        return text === `r/${subName}` || text === subName || text.includes(`r/${subName}`);
+      });
       
       if (titleEl && titleEl.dataset.rsBlockBtnInjected !== 'true') {
         if (titleEl.style) {
@@ -434,6 +437,7 @@ const UIManager = {
 
   /**
    * Scans for OP, Commenters, and Chat users to inject stats badges.
+   * Uses global document scanning (like block buttons) to bypass closed shadow DOM.
    * Returns a list of usernames that need their data fetched.
    */
   injectUserStats(settings, userStatsCache) {
@@ -442,40 +446,71 @@ const UIManager = {
     const neededUsers = new Set();
     const myUsername = (settings.lastDetectedUser && settings.lastDetectedUser.username) ? settings.lastDetectedUser.username.toLowerCase() : '';
     
-    // 1. Collect specific author elements we care about (OP, Commenters, Chat)
-    const authorNodes = [];
-
-    // A. Posts (OP)
+    // 1. Build a set of relevant usernames from post authors and commenters
+    //    (to avoid badging every random user link on the page)
+    const relevantUsernames = new Set();
+    
     document.querySelectorAll('shreddit-post').forEach(post => {
-      const authorName = post.getAttribute('author');
-      if (authorName) {
-        // Find the author link inside the light DOM or shadow DOM
-        const link = post.querySelector(`a[href*="/user/${authorName}/" i], a[href*="/u/${authorName}/" i]`) || 
-                     (post.shadowRoot && post.shadowRoot.querySelector(`a[href*="/user/${authorName}/" i], a[href*="/u/${authorName}/" i]`));
-        if (link) {
-          authorNodes.push({ username: authorName, node: link });
-        } else {
-          // Sometimes it's just a span with slot="authorName"
-          const span = post.querySelector('[slot="authorName"]');
-          if (span) authorNodes.push({ username: authorName, node: span });
-        }
-      }
+      const author = post.getAttribute('author');
+      if (author) relevantUsernames.add(author.toLowerCase());
     });
-
-    // B. Comments
+    
     document.querySelectorAll('shreddit-comment').forEach(comment => {
-      const authorName = comment.getAttribute('author');
-      if (authorName) {
-        const link = comment.querySelector(`a[href*="/user/${authorName}/" i], a[href*="/u/${authorName}/" i]`) ||
-                     (comment.shadowRoot && comment.shadowRoot.querySelector(`a[href*="/user/${authorName}/" i], a[href*="/u/${authorName}/" i]`));
-        if (link) authorNodes.push({ username: authorName, node: link });
+      const author = comment.getAttribute('author');
+      if (author) relevantUsernames.add(author.toLowerCase());
+    });
+
+    // 2. Scan ALL user links globally in the document (bypasses closed shadow DOM)
+    const authorNodes = [];
+    const allUserLinks = Array.from(document.querySelectorAll('a[href*="/user/"], a[href*="/u/"]'));
+    
+    // Also check inside any open shadow roots
+    document.querySelectorAll('shreddit-post, shreddit-comment, faceplate-hovercard').forEach(el => {
+      if (el.shadowRoot) {
+        allUserLinks.push(...el.shadowRoot.querySelectorAll('a[href*="/user/"], a[href*="/u/"]'));
       }
     });
 
-    // C. Chat (chat.reddit.com) - Usually spans or headers
+    allUserLinks.forEach(link => {
+      if (link.dataset.rsUserStatsInjected === 'true') return;
+      
+      const href = link.getAttribute('href') || '';
+      const match = href.match(/\/(?:user|u)\/([a-zA-Z0-9_\-]+)/i);
+      if (!match) return;
+      const username = match[1];
+      const userLower = username.toLowerCase();
+      
+      // Only badge users who are OP or commenters (rate-limit protection)
+      if (relevantUsernames.size > 0 && !relevantUsernames.has(userLower)) return;
+      
+      // Skip self
+      if (userLower === myUsername) return;
+      // Skip system/special names
+      if (['me', 'login', 'signup', 'submit', 'avatar', 'deleted', 'automoderator'].includes(userLower)) return;
+      
+      // Skip irrelevant areas (our own UI)
+      if (link.closest('#rs-warning-modal-host, .rs-comment-inline-guide, .rs-inline-block-btn')) return;
+      
+      // Skip if already has a badge sibling
+      if (link.parentElement && link.parentElement.querySelector('.rs-user-stats-badge')) return;
+      
+      // Skip avatar-only links (links that contain images/svg but no visible text)
+      const linkText = (link.textContent || '').trim();
+      if (!linkText || linkText.length < 2) return;
+      if (link.querySelector('img, svg, faceplate-img, shreddit-async-loader')) return;
+      
+      // Must look like a username display (contains the username text)
+      if (!linkText.toLowerCase().includes(userLower) && 
+          !linkText.toLowerCase().startsWith('u/')) return;
+      
+      authorNodes.push({ username, node: link });
+    });
+
+    // 3. Chat support (chat.reddit.com uses different structure)
     if (window.location.hostname.includes('chat.reddit.com')) {
+      // Chat usernames in spans/divs with 'username' class
       document.querySelectorAll('span, h2, h3, div').forEach(el => {
-        // Chat usernames often have specific classes or just text
+        if (el.dataset.rsUserStatsInjected === 'true') return;
         if (el.className && typeof el.className === 'string' && el.className.toLowerCase().includes('username')) {
           const text = el.textContent.trim();
           if (text && !text.includes(' ') && text.length > 2) {
@@ -483,42 +518,32 @@ const UIManager = {
           }
         }
       });
-      // Also catch explicit chat links
-      document.querySelectorAll('a[href*="/user/"]').forEach(link => {
-        const match = link.getAttribute('href').match(/\/(?:user|u)\/([a-zA-Z0-9_\-]+)\/?/i);
-        if (match) authorNodes.push({ username: match[1], node: link });
-      });
     }
 
-    // 2. Process collected nodes
+    // 4. Process collected nodes
     const windowHeight = window.innerHeight || document.documentElement.clientHeight;
 
     authorNodes.forEach(({ username, node }) => {
       if (node.dataset.rsUserStatsInjected === 'true') return;
-      if (username.toLowerCase() === myUsername) return; // Don't badge yourself
-      if (['me', 'login', 'signup', 'submit', 'avatar', 'deleted'].includes(username.toLowerCase())) return;
+      const userLower = username.toLowerCase();
 
-      // Skip if it looks like an avatar (contains img, svg)
-      if (node.querySelector('img, svg, shreddit-async-loader, [avatar]')) return;
-
-      const cached = userStatsCache.get(username.toLowerCase());
+      const cached = userStatsCache.get(userLower);
       
       if (cached === undefined) {
-        // Not fetched yet - ONLY queue if it's within or near the viewport
+        // Not fetched yet - ONLY queue if near viewport
         const rect = node.getBoundingClientRect();
         if (rect.top >= -1000 && rect.bottom <= windowHeight + 1000) {
-          neededUsers.add(username);
+          neededUsers.add(userLower); // Always lowercase for cache consistency
         }
         return;
       }
       
       if (cached === null || cached.rateLimited) {
-        // Fetched but failed/not found, mark as injected so we don't keep retrying
         node.dataset.rsUserStatsInjected = 'true';
         return;
       }
 
-      // We have data! Let's inject it.
+      // Build badge content
       const badge = document.createElement('span');
       badge.className = 'rs-user-stats-badge';
       
@@ -534,10 +559,20 @@ const UIManager = {
       }
       
       if (parts.length > 0) {
-        badge.innerText = ` (${parts.join(' | ')})`;
+        badge.innerText = `📊 ${parts.join(' | ')}`;
         
-        // Append inside the node so it inherits the text flow naturally
-        node.appendChild(badge);
+        // Insert as sibling to avoid CSS truncation (same approach as block buttons)
+        const parent = node.parentElement;
+        if (parent) {
+          const parentStyle = window.getComputedStyle(parent);
+          if (parentStyle.display === 'block' || parentStyle.display === 'list-item') {
+            parent.style.display = 'flex';
+            parent.style.alignItems = 'center';
+          }
+          parent.insertBefore(badge, node.nextSibling);
+        } else {
+          node.appendChild(badge);
+        }
       }
       
       node.dataset.rsUserStatsInjected = 'true';

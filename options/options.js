@@ -165,7 +165,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       const keyword = newFilterKeyword.value.trim().toLowerCase();
 
       if (!sub && !keyword) {
-        alert('Please enter a subreddit, a keyword, or both.');
+        const btnAdd = document.getElementById('btnAddFilter');
+        if (btnAdd) {
+          const originalText = btnAdd.textContent;
+          btnAdd.textContent = 'Enter sub or keyword!';
+          btnAdd.style.background = '#ef4444';
+          setTimeout(() => { btnAdd.textContent = originalText; btnAdd.style.background = ''; }, 2000);
+        }
         return;
       }
 

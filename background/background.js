@@ -3,12 +3,12 @@
  * Background Service Worker
  */
 
-// Import scripts in Chromium Service Worker; in Firefox they are loaded via manifest.json scripts array
+// Import dependencies in Chromium Service Worker; in Firefox they are loaded via manifest.json scripts array
 if (typeof importScripts === 'function') {
   try {
     importScripts('/utils/browser-api.js', '/utils/storage.js', '/utils/logger.js', '/background/cleaner.js');
   } catch (e) {
-    console.warn('[Reddit Safety] importScripts notice:', e);
+    console.warn('[Reddit Safety] importScripts error:', e);
   }
 }
 

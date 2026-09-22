@@ -24,14 +24,14 @@
       "utils/browser-api.js",
       "utils/storage.js",
       "utils/logger.js",
-      "background/background.js",
-      "background/cleaner.js"
-    ],
-    "service_worker": "background/background.js"
+      "background/cleaner.js",
+      "background/background.js"
+    ]
   },
   "browser_specific_settings": {
     "gecko": {
-      "id": "reddit-privacy-safety@local"
+      "id": "reddit-privacy-safety@local",
+      "strict_min_version": "109.0"
     }
   },
   "content_scripts": [
@@ -70,17 +70,12 @@
         "content/reddit.js"
       ],
       "run_at": "document_idle"
-    },
+    }
+  ],
+  "web_accessible_resources": [
     {
-      "matches": [
-        "*://*.reddit.com/*",
-        "*://reddit.com/*"
-      ],
-      "js": [
-        "content/auto-reveal.js"
-      ],
-      "run_at": "document_start",
-      "world": "MAIN"
+      "resources": ["content/auto-reveal.js"],
+      "matches": ["*://*.reddit.com/*", "*://reddit.com/*"]
     }
   ],
   "action": {
