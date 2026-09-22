@@ -433,46 +433,79 @@ const UIManager = {
   },
 
   /**
-   * Scans for other users' names and injects stats badges if data is cached.
+   * Scans for OP, Commenters, and Chat users to inject stats badges.
    * Returns a list of usernames that need their data fetched.
    */
   injectUserStats(settings, userStatsCache) {
     if (!settings || !settings.showOtherUserStats) return [];
     
     const neededUsers = new Set();
-    const allLinks = Array.from(document.querySelectorAll('a[href*="/user/"], a[href*="/u/"]'));
+    const myUsername = (settings.lastDetectedUser && settings.lastDetectedUser.username) ? settings.lastDetectedUser.username.toLowerCase() : '';
     
-    // Check shadow DOMs
-    document.querySelectorAll('shreddit-post, shreddit-comment').forEach(el => {
-      if (el.shadowRoot) {
-        allLinks.push(...el.shadowRoot.querySelectorAll('a[href*="/user/"], a[href*="/u/"]'));
+    // 1. Collect specific author elements we care about (OP, Commenters, Chat)
+    const authorNodes = [];
+
+    // A. Posts (OP)
+    document.querySelectorAll('shreddit-post').forEach(post => {
+      const authorName = post.getAttribute('author');
+      if (authorName) {
+        // Find the author link inside the light DOM or shadow DOM
+        const link = post.querySelector(`a[href*="/user/${authorName}/" i], a[href*="/u/${authorName}/" i]`) || 
+                     (post.shadowRoot && post.shadowRoot.querySelector(`a[href*="/user/${authorName}/" i], a[href*="/u/${authorName}/" i]`));
+        if (link) {
+          authorNodes.push({ username: authorName, node: link });
+        } else {
+          // Sometimes it's just a span with slot="authorName"
+          const span = post.querySelector('[slot="authorName"]');
+          if (span) authorNodes.push({ username: authorName, node: span });
+        }
       }
     });
 
-    const myUsername = (settings.lastDetectedUser && settings.lastDetectedUser.username) ? settings.lastDetectedUser.username.toLowerCase() : '';
+    // B. Comments
+    document.querySelectorAll('shreddit-comment').forEach(comment => {
+      const authorName = comment.getAttribute('author');
+      if (authorName) {
+        const link = comment.querySelector(`a[href*="/user/${authorName}/" i], a[href*="/u/${authorName}/" i]`) ||
+                     (comment.shadowRoot && comment.shadowRoot.querySelector(`a[href*="/user/${authorName}/" i], a[href*="/u/${authorName}/" i]`));
+        if (link) authorNodes.push({ username: authorName, node: link });
+      }
+    });
 
-    allLinks.forEach(link => {
-      if (link.dataset.rsUserStatsInjected === 'true') return;
+    // C. Chat (chat.reddit.com) - Usually spans or headers
+    if (window.location.hostname.includes('chat.reddit.com')) {
+      document.querySelectorAll('span, h2, h3, div').forEach(el => {
+        // Chat usernames often have specific classes or just text
+        if (el.className && typeof el.className === 'string' && el.className.toLowerCase().includes('username')) {
+          const text = el.textContent.trim();
+          if (text && !text.includes(' ') && text.length > 2) {
+            authorNodes.push({ username: text, node: el });
+          }
+        }
+      });
+      // Also catch explicit chat links
+      document.querySelectorAll('a[href*="/user/"]').forEach(link => {
+        const match = link.getAttribute('href').match(/\/(?:user|u)\/([a-zA-Z0-9_\-]+)\/?/i);
+        if (match) authorNodes.push({ username: match[1], node: link });
+      });
+    }
 
-      const href = link.getAttribute('href');
-      const match = href.match(/\/(?:user|u)\/([a-zA-Z0-9_\-]+)\/?/i);
-      if (!match) return;
+    // 2. Process collected nodes
+    const windowHeight = window.innerHeight || document.documentElement.clientHeight;
 
-      const username = match[1];
-      if (!username || username.toLowerCase() === myUsername) return; // Don't badge yourself
-      
-      // Ignore some common system routes
-      if (['me', 'login', 'signup', 'submit', 'avatar'].includes(username.toLowerCase())) return;
+    authorNodes.forEach(({ username, node }) => {
+      if (node.dataset.rsUserStatsInjected === 'true') return;
+      if (username.toLowerCase() === myUsername) return; // Don't badge yourself
+      if (['me', 'login', 'signup', 'submit', 'avatar', 'deleted'].includes(username.toLowerCase())) return;
 
-      // Skip avatar links (they usually contain imgs, svgs, or have no text)
-      const text = link.textContent.trim();
-      if (!text || link.querySelector('img, svg, shreddit-async-loader, [avatar]')) return;
+      // Skip if it looks like an avatar (contains img, svg)
+      if (node.querySelector('img, svg, shreddit-async-loader, [avatar]')) return;
 
       const cached = userStatsCache.get(username.toLowerCase());
+      
       if (cached === undefined) {
         // Not fetched yet - ONLY queue if it's within or near the viewport
-        const rect = link.getBoundingClientRect();
-        const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+        const rect = node.getBoundingClientRect();
         if (rect.top >= -1000 && rect.bottom <= windowHeight + 1000) {
           neededUsers.add(username);
         }
@@ -481,7 +514,7 @@ const UIManager = {
       
       if (cached === null || cached.rateLimited) {
         // Fetched but failed/not found, mark as injected so we don't keep retrying
-        link.dataset.rsUserStatsInjected = 'true';
+        node.dataset.rsUserStatsInjected = 'true';
         return;
       }
 
@@ -502,17 +535,12 @@ const UIManager = {
       
       if (parts.length > 0) {
         badge.innerText = ` (${parts.join(' | ')})`;
-        badge.style.fontSize = '0.85em';
-        badge.style.opacity = '0.7';
-        badge.style.marginLeft = '4px';
-        badge.style.fontWeight = 'normal';
-        badge.style.pointerEvents = 'none';
         
-        // Append inside the link so it inherits the text flow naturally
-        link.appendChild(badge);
+        // Append inside the node so it inherits the text flow naturally
+        node.appendChild(badge);
       }
       
-      link.dataset.rsUserStatsInjected = 'true';
+      node.dataset.rsUserStatsInjected = 'true';
     });
     
     return Array.from(neededUsers);
