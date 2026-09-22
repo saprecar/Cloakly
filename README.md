@@ -1,4 +1,4 @@
-# Reddit Privacy & Posting Safety Extension
+# Cloakly Extension
 
 A powerful browser extension designed to enhance your Reddit experience by giving you granular control over content visibility, auto-revealing natively blurred content, and providing an intuitive set of privacy options.
 
