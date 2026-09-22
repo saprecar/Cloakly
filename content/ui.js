@@ -391,10 +391,15 @@ const UIManager = {
 
     let botSnippetsHtml = '';
     if (settings && settings.botSnippetsEnabled && settings.botSnippets && settings.botSnippets.length > 0) {
-      const btnHtml = settings.botSnippets.map(bot => 
-        `<button type="button" class="rs-inline-btn rs-btn-bot-snippet" data-command="${this.escapeHtml(bot.command)}" style="background:#2d3748; margin-right:6px; padding:2px 8px; font-size:11px; margin-top:8px;">🤖 ${this.escapeHtml(bot.name)}</button>`
+      const optionsHtml = settings.botSnippets.map(bot => 
+        `<option value="${this.escapeHtml(bot.command)}">🤖 ${this.escapeHtml(bot.name)}</option>`
       ).join('');
-      botSnippetsHtml = `<div class="rs-bot-snippets-container" style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 8px; padding-top: 4px;">${btnHtml}</div>`;
+      botSnippetsHtml = `
+        <select class="rs-bot-snippet-select" style="background:#2d3748; color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; margin-right:8px; padding:2px 8px; font-size:11px; cursor: pointer; outline: none;">
+          <option value="" disabled selected>🤖 Insert Bot ▼</option>
+          ${optionsHtml}
+        </select>
+      `;
     }
 
     const hasWarnings = evaluation && (evaluation.hasNotMet || evaluation.hasConflict);
@@ -405,7 +410,8 @@ const UIManager = {
       guide.innerHTML = `
         <div class="rs-inline-header">
           <span class="rs-inline-title" style="color:#fde047;">⚠️ ${subName} Comment Guidance</span>
-          <div>
+          <div style="display: flex; align-items: center;">
+            ${botSnippetsHtml}
             <button type="button" class="rs-inline-btn rs-btn-analyze" style="background:#4a5568; margin-right:8px; padding:2px 8px; font-size:11px;">🔍 Guideline Check</button>
             <span class="rs-inline-badge warning">Review Guidelines</span>
           </div>
@@ -414,7 +420,6 @@ const UIManager = {
           ${evaluation.summary || 'Potential rule conflicts or community requirements detected.'}
           ${statsString}
         </div>
-        ${botSnippetsHtml}
       `;
     } else {
       guide.className = 'rs-comment-inline-guide';
@@ -422,7 +427,8 @@ const UIManager = {
       guide.innerHTML = `
         <div class="rs-inline-header">
           <span class="rs-inline-title">🛡️ ${subName} Comment Safety</span>
-          <div>
+          <div style="display: flex; align-items: center;">
+            ${botSnippetsHtml}
             <button type="button" class="rs-inline-btn rs-btn-analyze" style="background:#4a5568; margin-right:8px; padding:2px 8px; font-size:11px;">🔍 Guideline Check</button>
             <span class="rs-inline-badge pass">✓ Ready to Submit</span>
           </div>
@@ -431,17 +437,18 @@ const UIManager = {
           Safety check active • Verify comments adhere to ${subName} community guidelines.
           ${statsString}
         </div>
-        ${botSnippetsHtml}
       `;
     }
 
     // Attach bot snippet listeners
-    const botBtns = guide.querySelectorAll('.rs-btn-bot-snippet');
-    botBtns.forEach(btn => {
-      if (!btn.dataset.rsListening) {
-        btn.dataset.rsListening = 'true';
-        btn.addEventListener('click', () => {
-          const command = btn.dataset.command;
+    const botSelects = guide.querySelectorAll('.rs-bot-snippet-select');
+    botSelects.forEach(selectEl => {
+      if (!selectEl.dataset.rsListening) {
+        selectEl.dataset.rsListening = 'true';
+        selectEl.addEventListener('change', () => {
+          const command = selectEl.value;
+          if (!command) return;
+          selectEl.value = ''; // Reset dropdown
           const composer = guide.previousElementSibling;
           let textEl = null;
           
