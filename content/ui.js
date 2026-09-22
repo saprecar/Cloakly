@@ -347,7 +347,10 @@ const UIManager = {
       btn.className = 'rs-inline-block-btn' + (isHeader ? ' header-btn' : '');
       btn.title = `Block r/${subName}`;
       btn.innerText = isHeader ? '⛔ Block Subreddit' : '⛔';
-      if (isHeader) btn.style.marginLeft = '12px';
+      
+      if (isHeader) {
+        btn.style.marginLeft = '12px';
+      }
 
       btn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -355,31 +358,43 @@ const UIManager = {
         handleBlock(subName, btn);
       });
 
+      // Fix for sidebar or other block-level wrappers: make parent flex so it doesn't wrap to a new line
+      if (!isHeader && target.parentElement) {
+        const parentStyle = window.getComputedStyle(target.parentElement);
+        if (parentStyle.display === 'block' || parentStyle.display === 'list-item') {
+          target.parentElement.style.display = 'flex';
+          target.parentElement.style.alignItems = 'center';
+        }
+      }
+
       target.parentElement.insertBefore(btn, target.nextSibling);
       target.dataset.rsBlockBtnInjected = 'true';
     };
 
-    // 1. Inject into Feed Posts & Hovercards
-    // Collect all links that might be a subreddit link, including those inside shadow DOMs of shreddit-post
-    const allLinks = Array.from(document.querySelectorAll('a[href^="/r/"]'));
+    // 1. Inject into Feed Posts & Hovercards & Sidebar
+    // Collect all links that contain /r/ (handles absolute URLs too)
+    const allLinks = Array.from(document.querySelectorAll('a[href*="/r/"]'));
     document.querySelectorAll('shreddit-post').forEach(post => {
       if (post.shadowRoot) {
-        allLinks.push(...post.shadowRoot.querySelectorAll('a[href^="/r/"]'));
+        allLinks.push(...post.shadowRoot.querySelectorAll('a[href*="/r/"]'));
       }
     });
 
     allLinks.forEach(link => {
       if (link.dataset.rsBlockBtnInjected === 'true') return;
 
-      const subNameMatch = link.getAttribute('href').match(/^\/r\/([^\/]+)\/?$/i);
+      const href = link.getAttribute('href');
+      // Match /r/SubName or https://reddit.com/r/SubName
+      const subNameMatch = href.match(/\/r\/([^\/]+)\/?$/i);
       if (!subNameMatch) return;
       const subName = subNameMatch[1].toLowerCase();
 
-      // Ensure the link text actually contains the subreddit name (avoids avatars)
+      // Ensure the link text actually contains the subreddit name OR is a dedicated span
       const linkText = (link.textContent || '').trim().toLowerCase();
-      if (!linkText.includes(`r/${subName}`)) return;
+      // Allow if it explicitly contains the sub name, or if it has an inner span containing the sub name
+      if (!linkText.includes(`r/${subName}`) && !linkText.includes(subName)) return;
 
-      // Ensure we aren't in the popup/sidebar or irrelevant areas
+      // Avoid irrelevant areas
       if (link.closest('#rs-warning-modal-host, .rs-comment-inline-guide')) return;
 
       if (blockedSubs.includes(subName)) {
@@ -392,34 +407,27 @@ const UIManager = {
     });
 
     // 2. Inject into Subreddit Page Header (Main Title)
-    const subHeader = document.querySelector('shreddit-subreddit-header');
-    if (subHeader) {
-      const pathMatch = window.location.pathname.match(/^\/r\/([^\/]+)/i);
-      if (pathMatch) {
-        const subName = pathMatch[1].toLowerCase();
-        
-        // Find the title element. It might be h1, or just an element containing the text r/Subname
-        let titleEl = subHeader.querySelector('h1') || (subHeader.shadowRoot && subHeader.shadowRoot.querySelector('h1'));
-        
-        if (!titleEl) {
-           // Fallback: look for any element containing the text r/Subname
-           const allEls = Array.from(subHeader.querySelectorAll('*'));
-           if (subHeader.shadowRoot) allEls.push(...subHeader.shadowRoot.querySelectorAll('*'));
-           
-           titleEl = allEls.find(el => {
-             return el.childNodes.length === 1 && 
-                    el.childNodes[0].nodeType === 3 && 
-                    el.textContent.trim().toLowerCase() === `r/${subName}`;
-           });
+    // Don't rely on shreddit-subreddit-header being present, just find the H1 directly
+    const pathMatch = window.location.pathname.match(/^\/r\/([^\/]+)/i);
+    if (pathMatch) {
+      const subName = pathMatch[1].toLowerCase();
+      
+      const allH1s = Array.from(document.querySelectorAll('h1'));
+      // also check shadow roots of generic containers if needed
+      document.querySelectorAll('shreddit-subreddit-header, shreddit-profile, [id^="subreddit-"]').forEach(el => {
+        if (el.shadowRoot) {
+          allH1s.push(...el.shadowRoot.querySelectorAll('h1'));
         }
-        
-        if (titleEl) {
-          if (titleEl.style) {
-            titleEl.style.display = 'inline-flex';
-            titleEl.style.alignItems = 'center';
-          }
-          injectBtn(titleEl, subName, true);
+      });
+
+      const titleEl = allH1s.find(h1 => (h1.textContent || '').toLowerCase().includes(`r/${subName}`));
+      
+      if (titleEl && titleEl.dataset.rsBlockBtnInjected !== 'true') {
+        if (titleEl.style) {
+          titleEl.style.display = 'inline-flex';
+          titleEl.style.alignItems = 'center';
         }
+        injectBtn(titleEl, subName, true);
       }
     }
   },
