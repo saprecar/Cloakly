@@ -1,10 +1,10 @@
 /**
- * Reddit Privacy & Posting Safety Extension
+ * Cloakly
  * Main Content Script Entry Point
  */
 
 (async function initRedditSafetyExtension() {
-  Logger.log('Initializing Reddit Safety Extension content script...');
+  Logger.log('Initializing Cloakly content script...');
 
   // Fetch initial stored settings
   let currentSettings = await StorageManager.getSettings();
@@ -377,5 +377,5 @@
     }
   });
 
-  Logger.log('Reddit Safety Extension active.');
+  Logger.log('Cloakly active.');
 })();

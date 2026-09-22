@@ -1,5 +1,5 @@
 /**
- * Reddit Privacy & Posting Safety Extension
+ * Cloakly
  * Account Cleaner API Logic
  */
 

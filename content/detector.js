@@ -1,5 +1,5 @@
 /**
- * Reddit Privacy & Posting Safety Extension
+ * Cloakly
  * DOM & Content Detector Module for Reddit Layouts (Old, New, Shreddit)
  */
 

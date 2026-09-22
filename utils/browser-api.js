@@ -1,5 +1,5 @@
 /**
- * Reddit Privacy & Posting Safety Extension
+ * Cloakly
  * Browser API Compatibility Layer (Chrome MV3 & Firefox MV3/WebExtensions)
  *
  * Provides a unified `browserAPI` global that normalizes differences between
@@ -12,7 +12,7 @@ const browserAPI = (() => {
   const rawAPI = isFirefox ? browser : (typeof chrome !== 'undefined' ? chrome : null);
 
   if (!rawAPI) {
-    console.error('[Reddit Safety] No browser extension API found!');
+    console.error('[Cloakly] No browser extension API found!');
     return {};
   }
 
@@ -26,7 +26,7 @@ const browserAPI = (() => {
         try {
           return (await rawAPI.storage.local.get(keys)) || {};
         } catch (e) {
-          console.error('[Reddit Safety] Firefox storage.local.get error:', e);
+          console.error('[Cloakly] Firefox storage.local.get error:', e);
           return {};
         }
       }
@@ -34,7 +34,7 @@ const browserAPI = (() => {
       return new Promise((resolve) => {
         rawAPI.storage.local.get(keys, (result) => {
           if (rawAPI.runtime.lastError) {
-            console.error('[Reddit Safety] Chrome storage.local.get error:', rawAPI.runtime.lastError);
+            console.error('[Cloakly] Chrome storage.local.get error:', rawAPI.runtime.lastError);
             resolve({});
           } else {
             resolve(result || {});
@@ -49,14 +49,14 @@ const browserAPI = (() => {
           await rawAPI.storage.local.set(items);
           return true;
         } catch (e) {
-          console.error('[Reddit Safety] Firefox storage.local.set error:', e);
+          console.error('[Cloakly] Firefox storage.local.set error:', e);
           return false;
         }
       }
       return new Promise((resolve) => {
         rawAPI.storage.local.set(items, () => {
           if (rawAPI.runtime.lastError) {
-            console.error('[Reddit Safety] Chrome storage.local.set error:', rawAPI.runtime.lastError);
+            console.error('[Cloakly] Chrome storage.local.set error:', rawAPI.runtime.lastError);
             resolve(false);
           } else {
             resolve(true);

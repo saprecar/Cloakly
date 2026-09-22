@@ -1,5 +1,5 @@
 /**
- * Reddit Privacy & Posting Safety Extension
+ * Cloakly
  * MAIN World Auto-Reveal Script
  * 
  * Runs natively in the page context (MAIN world) to directly manipulate Lit properties.

@@ -1,5 +1,5 @@
 /**
- * Reddit Privacy & Posting Safety Extension
+ * Cloakly
  * Link Scanner - Detects misleading and hidden link destinations
  */
 

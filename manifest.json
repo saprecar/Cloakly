@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Reddit Privacy & Posting Safety",
+  "name": "Cloakly",
   "version": "1.0.0",
   "description": "Local NSFW/Spoiler media blur protection and pre-submission subreddit requirement safety checker.",
   "icons": {
@@ -103,7 +103,7 @@
   ],
   "action": {
     "default_popup": "popup/popup.html",
-    "default_title": "Reddit Safety Settings",
+    "default_title": "Cloakly Settings",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",

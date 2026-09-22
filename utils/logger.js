@@ -1,17 +1,17 @@
 /**
- * Reddit Privacy & Posting Safety Extension
+ * Cloakly
  * Logger Utility
  */
 
 const Logger = {
   log: (...args) => {
-    console.log('[Reddit Safety]', ...args);
+    console.log('[Cloakly]', ...args);
   },
   warn: (...args) => {
-    console.warn('[Reddit Safety Warning]', ...args);
+    console.warn('[Cloakly Warning]', ...args);
   },
   error: (...args) => {
-    console.error('[Reddit Safety Error]', ...args);
+    console.error('[Cloakly Error]', ...args);
   }
 };
 

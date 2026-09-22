@@ -1,5 +1,5 @@
 /**
- * Reddit Privacy & Posting Safety Extension
+ * Cloakly
  * Pre-Submission Content Scanner
  * Detects sensitive information, custom keywords, and rule-breaking keywords.
  */

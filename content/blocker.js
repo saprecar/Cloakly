@@ -1,5 +1,5 @@
 /**
- * Reddit Privacy & Posting Safety Extension
+ * Cloakly
  * Subreddit Blocker - Runs at document_start to aggressively block access.
  */
 
@@ -33,11 +33,11 @@
           inline.remove();
         }
       } catch (e2) {
-        console.warn('[Reddit Safety] Auto-reveal injection failed entirely:', e2);
+        console.warn('[Cloakly] Auto-reveal injection failed entirely:', e2);
       }
     };
   } catch (e) {
-    console.warn('[Reddit Safety] Failed to inject auto-reveal script:', e);
+    console.warn('[Cloakly] Failed to inject auto-reveal script:', e);
   }
 
   const url = new URL(window.location.href);
@@ -137,6 +137,6 @@
       `;
     }
   } catch (err) {
-    console.error('[Reddit Safety] Blocker failed to read storage:', err);
+    console.error('[Cloakly] Blocker failed to read storage:', err);
   }
 })();

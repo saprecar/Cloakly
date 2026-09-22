@@ -16,7 +16,7 @@
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
         </svg>
         <div class="brand-text">
-          <span class="brand-title">Reddit Safety</span>
+          <span class="brand-title">Cloakly</span>
           <span class="brand-subtitle">Extension Control Center</span>
         </div>
       </div>
@@ -269,6 +269,49 @@
 
         <div class="card">
           <div class="card-header">
+            <h3>Bot Snippets</h3>
+            <p>Configure quick-insert bot commands (e.g. `!RemindMe 1 day`) to display under the comment box. Max 5 allowed.</p>
+          </div>
+          
+          <div class="setting-row" style="margin-bottom: 16px;">
+            <div class="setting-info">
+              <label for="botSnippetsEnabled">Enable Bot Snippets</label>
+              <span class="setting-desc">Show bot command shortcut buttons when writing a comment.</span>
+            </div>
+            <input type="checkbox" id="botSnippetsEnabled" class="switch">
+          </div>
+
+          <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+            <h4 style="margin-top: 0; margin-bottom: 12px; font-size: 13px; color: var(--text);">Add New Bot Snippet</h4>
+            
+            <div class="setting-row" style="margin-bottom: 12px;">
+              <div class="setting-info">
+                <label for="newBotName">Bot Name</label>
+                <span class="setting-desc">Short name for the button (e.g. Reminder)</span>
+              </div>
+              <input type="text" id="newBotName" placeholder="e.g. Reminder" class="text-input" style="width: 250px;">
+            </div>
+
+            <div class="setting-row" style="margin-bottom: 16px;">
+              <div class="setting-info">
+                <label for="newBotCommand">Bot Command</label>
+                <span class="setting-desc">The command to paste (e.g. `!RemindMe 1 day`)</span>
+              </div>
+              <input type="text" id="newBotCommand" placeholder="e.g. !RemindMe 1 day" class="text-input" style="width: 250px;">
+            </div>
+
+            <button type="button" class="btn btn-action" id="btnAddBot">Add Bot</button>
+            <span id="botErrorMsg" style="color: #fca5a5; font-size: 12px; margin-left: 10px; display: none;"></span>
+          </div>
+
+          <h4 style="margin-top: 0; margin-bottom: 12px; font-size: 13px; color: var(--text);">Active Bot Snippets</h4>
+          <div class="cache-list" id="botListContainer">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
             <h3>Creation Disabling Controls</h3>
             <p>Prevent accidental posting or commenting by hiding or disabling submission controls.</p>
           </div>
@@ -481,7 +524,7 @@
               <div class="setting-info">
                 <label for="manualUsername">Reddit Username (Optional)</label>
               </div>
-              <input type="text" id="manualUsername" placeholder="e.g. u/Spez" class="text-input" style="width: 250px;">
+              <input type="text" id="manualUsername" placeholder="e.g. u/username" class="text-input" style="width: 250px;">
             </div>
 
             <div class="setting-row" style="margin-bottom: 16px;">

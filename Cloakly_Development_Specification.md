@@ -1,4 +1,4 @@
-# Reddit Privacy & Posting Safety Extension — Development Specification
+# Cloakly — Development Specification
 
 ## 1. Project Goal
 
@@ -324,7 +324,7 @@ Maintain a local cache of parsed community rules.
 Example:
 
 ```text
-r/gaming
+r/another_example
 Last checked: 2026-09-21
 Rules cached locally
 
@@ -635,7 +635,7 @@ Possible controls:
 
 Display:
 
-> Post creation is disabled by Reddit Safety Extension.
+> Post creation is disabled by Cloakly.
 
 Provide an extension setting to temporarily enable it.
 
@@ -880,7 +880,7 @@ The user must explicitly enable it.
 The popup should be simple enough for a non-technical user.
 
 ```text
-REDDIT SAFETY
+Cloakly
 
 Browsing
 
@@ -1160,7 +1160,7 @@ Build a lightweight, privacy-focused Reddit browser extension that helps users:
 11. Support Chrome and Firefox.
 12. Keep the user in control of every submission.
 
-The extension should be presented as a "Reddit Safety & Posting Checker," not as a guaranteed shadow-ban prevention system.
+The extension should be presented as a "Cloakly & Posting Checker," not as a guaranteed shadow-ban prevention system.
 
 ---
 

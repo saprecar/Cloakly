@@ -1,5 +1,5 @@
 /**
- * Reddit Privacy & Posting Safety Extension
+ * Cloakly
  * Background Service Worker
  */
 
@@ -8,7 +8,7 @@ if (typeof importScripts === 'function') {
   try {
     importScripts('/utils/browser-api.js', '/utils/storage.js', '/utils/logger.js', '/background/cleaner.js');
   } catch (e) {
-    console.warn('[Reddit Safety] importScripts error:', e);
+    console.warn('[Cloakly] importScripts error:', e);
   }
 }
 

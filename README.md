@@ -1,4 +1,4 @@
-# Cloakly Extension
+# Cloakly
 
 A powerful browser extension designed to enhance your Reddit experience by giving you granular control over content visibility, auto-revealing natively blurred content, and providing an intuitive set of privacy options.
 
@@ -15,6 +15,19 @@ A powerful browser extension designed to enhance your Reddit experience by givin
 - **Custom Content Blurring:** Toggle blurs for NSFW and Spoiler posts individually.
 - **Auto-Reveal Native Blurs:** Automatically unblur Reddit's native NSFW and Spoiler images as you scroll, bypassing Reddit's strict click blocks.
 - **Account Nuke / Cleaner:** Permanently wipes your account history (Posts, Comments, Saved items, Upvotes, Downvotes) based on custom time ranges (Last hour, 24h, 7d, 30d, 1y, or custom dates).
+
+## Screenshots
+
+<div align="center">
+  <img src="assets/screenshot-1.png" alt="Browsing Protection" width="45%" />
+  <img src="assets/screenshot-2.png" alt="Content Submission Protection" width="45%" />
+</div>
+
+<div align="center">
+  <img src="assets/screenshot-3.png" alt="Feed Filters & Post Hiding" width="45%" />
+  <img src="assets/screenshot-4.png" alt="Extension Popup" width="22%" />
+  <img src="assets/screenshot-5.png" alt="Extension Popup (Continued)" width="22%" />
+</div>
 
 ## Credits & Acknowledgements
 

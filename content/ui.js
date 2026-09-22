@@ -1,5 +1,5 @@
 /**
- * Reddit Privacy & Posting Safety Extension
+ * Cloakly
  * UI Component & Modal Injection Layer
  */
 
@@ -278,7 +278,7 @@ const UIManager = {
     const banner = document.createElement('div');
     banner.className = 'rs-disabled-banner';
     banner.innerHTML = `
-      <span>🔒 ${type === 'post' ? 'Post' : 'Comment'} creation is disabled by Reddit Safety Extension settings.</span>
+      <span>🔒 ${type === 'post' ? 'Post' : 'Comment'} creation is disabled by Cloakly settings.</span>
     `;
     
     // Insert as a sibling BEFORE the container (not inside it, for Shadow DOM compat)
@@ -389,6 +389,14 @@ const UIManager = {
       return;
     }
 
+    let botSnippetsHtml = '';
+    if (settings && settings.botSnippetsEnabled && settings.botSnippets && settings.botSnippets.length > 0) {
+      const btnHtml = settings.botSnippets.map(bot => 
+        `<button type="button" class="rs-inline-btn rs-btn-bot-snippet" data-command="${this.escapeHtml(bot.command)}" style="background:#2d3748; margin-right:6px; padding:2px 8px; font-size:11px; margin-top:8px;">🤖 ${this.escapeHtml(bot.name)}</button>`
+      ).join('');
+      botSnippetsHtml = `<div class="rs-bot-snippets-container" style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 8px; padding-top: 4px;">${btnHtml}</div>`;
+    }
+
     const hasWarnings = evaluation && (evaluation.hasNotMet || evaluation.hasConflict);
 
     if (hasWarnings) {
@@ -406,6 +414,7 @@ const UIManager = {
           ${evaluation.summary || 'Potential rule conflicts or community requirements detected.'}
           ${statsString}
         </div>
+        ${botSnippetsHtml}
       `;
     } else {
       guide.className = 'rs-comment-inline-guide';
@@ -422,8 +431,66 @@ const UIManager = {
           Safety check active • Verify comments adhere to ${subName} community guidelines.
           ${statsString}
         </div>
+        ${botSnippetsHtml}
       `;
     }
+
+    // Attach bot snippet listeners
+    const botBtns = guide.querySelectorAll('.rs-btn-bot-snippet');
+    botBtns.forEach(btn => {
+      if (!btn.dataset.rsListening) {
+        btn.dataset.rsListening = 'true';
+        btn.addEventListener('click', () => {
+          const command = btn.dataset.command;
+          const composer = guide.previousElementSibling;
+          let textEl = null;
+          
+          if (composer) {
+            const textEls = typeof RedditDetector !== 'undefined' ? RedditDetector.queryDeepAll('textarea, [contenteditable="true"], [role="textbox"]', composer) : [];
+            textEl = textEls.length > 0 ? textEls[0] : composer.querySelector('textarea, [contenteditable="true"]');
+            
+            if (textEl) {
+              if (textEl.tagName === 'TEXTAREA') {
+                textEl.value = textEl.value ? textEl.value + '\\n' + command : command;
+              } else {
+                // Focus the editable div
+                textEl.focus();
+                
+                // Attempt to insert text securely
+                try {
+                  const selection = window.getSelection();
+                  if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    // Check if range is inside our textEl
+                    if (textEl.contains(range.commonAncestorContainer)) {
+                      range.deleteContents();
+                      const node = document.createTextNode(command + ' ');
+                      range.insertNode(node);
+                      range.setStartAfter(node);
+                      range.collapse(true);
+                      selection.removeAllRanges();
+                      selection.addRange(range);
+                    } else {
+                      // Fallback if cursor not inside
+                      textEl.innerHTML += `<span>${command} </span>`;
+                    }
+                  } else {
+                    textEl.innerHTML += `<span>${command} </span>`;
+                  }
+                } catch (e) {
+                   textEl.innerHTML += `<span>${command} </span>`;
+                }
+              }
+              // Trigger input events
+              textEl.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+              textEl.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+              // For React/Lexical
+              textEl.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'Space', code: 'Space' }));
+            }
+          }
+        });
+      }
+    });
 
     const analyzeBtn = guide.querySelector('.rs-btn-analyze');
     if (analyzeBtn && !analyzeBtn.dataset.rsListening) {

@@ -1,5 +1,5 @@
 /**
- * Reddit Privacy & Posting Safety Extension
+ * Cloakly
  * Local Storage Helper & Default Configuration
  */
 
@@ -25,6 +25,12 @@ const DEFAULT_SETTINGS = {
   scrollingOnlyMode: false,
   postFilters: [], // Array of { id, subreddit, keyword }
   blockedSubreddits: [], // Array of strings (e.g., 'news', 'gaming')
+
+  // Bot Snippets
+  botSnippetsEnabled: true,
+  botSnippets: [
+    { id: 'remindme-bot', name: 'Reminder', command: '!RemindMe 1 day' }
+  ],
 
   // Content Protection & Scanning
   contentProtection: {
@@ -117,7 +123,7 @@ const StorageManager = {
         ruleCache: stored.ruleCache || {}
       };
     } catch (err) {
-      console.error('[Reddit Safety] Storage fetch error:', err);
+      console.error('[Cloakly] Storage fetch error:', err);
       return { ...DEFAULT_SETTINGS };
     }
   },
@@ -161,7 +167,7 @@ const StorageManager = {
         if (!stored.profiles[activeProfile]) {
           stored.profiles[activeProfile] = {}; // Will inherit DEFAULT_SETTINGS on read
         }
-        console.log(`[Reddit Safety] Switched active profile to: ${activeProfile}`);
+        console.log(`[Cloakly] Switched active profile to: ${activeProfile}`);
         
         // Reset shadowban check for new profile if it hasn't been checked yet
         if (!stored.profiles[activeProfile].lastShadowbanCheck) {
@@ -188,7 +194,7 @@ const StorageManager = {
       await browserAPI.storage.local.set(stored);
       return true;
     } catch (err) {
-      console.error('[Reddit Safety] Storage update error:', err);
+      console.error('[Cloakly] Storage update error:', err);
       return false;
     }
   },

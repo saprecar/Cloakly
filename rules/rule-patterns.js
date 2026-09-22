@@ -1,5 +1,5 @@
 /**
- * Reddit Privacy & Posting Safety Extension
+ * Cloakly
  * Deterministic Rule Patterns (No AI / Local Regex Parsing)
  */
 

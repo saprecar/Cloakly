@@ -1,5 +1,5 @@
 /**
- * Reddit Privacy & Posting Safety Extension
+ * Cloakly
  * Local Rule Engine (Deterministic Evaluation)
  */
 

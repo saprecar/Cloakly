@@ -1,5 +1,5 @@
 /**
- * Reddit Privacy & Posting Safety Extension
+ * Cloakly
  * Options Controller Script
  */
 
@@ -65,6 +65,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderBlockedSubreddits();
       } else if (tabId === 'tab-protection') {
         renderCustomKeywords();
+      } else if (tabId === 'tab-posting') {
+        renderBotSnippets();
       }
     });
   });
@@ -82,6 +84,79 @@ document.addEventListener('DOMContentLoaded', async () => {
   const blockedListContainer = document.getElementById('blockedListContainer');
   const btnBlockSubreddit = document.getElementById('btnBlockSubreddit');
   const newBlockedSubreddit = document.getElementById('newBlockedSubreddit');
+
+  // Bot Snippets Management
+  const botListContainer = document.getElementById('botListContainer');
+  const btnAddBot = document.getElementById('btnAddBot');
+  const newBotName = document.getElementById('newBotName');
+  const newBotCommand = document.getElementById('newBotCommand');
+  const botErrorMsg = document.getElementById('botErrorMsg');
+
+  async function renderBotSnippets() {
+    if (!botListContainer) return;
+    const snippets = settings.botSnippets || [];
+    
+    if (snippets.length === 0) {
+      botListContainer.innerHTML = '<div class="empty-state">No bot snippets added. Add one above.</div>';
+      return;
+    }
+
+    botListContainer.innerHTML = snippets.map(s => `
+      <div class="cache-card" style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <div class="cache-sub-title">${s.name}</div>
+          <div class="cache-sub-desc" style="font-family: monospace; background: rgba(0,0,0,0.2); padding: 2px 4px; border-radius: 4px; margin-top: 4px;">${s.command}</div>
+        </div>
+        <button class="btn btn-danger btn-delete-bot" data-id="${s.id}" style="padding: 4px 8px; font-size: 11px;">Remove</button>
+      </div>
+    `).join('');
+
+    document.querySelectorAll('.btn-delete-bot').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const idToRemove = e.target.getAttribute('data-id');
+        settings.botSnippets = settings.botSnippets.filter(s => s.id !== idToRemove);
+        await StorageManager.updateSettings({ botSnippets: settings.botSnippets });
+        renderBotSnippets();
+        showSaveFeedback();
+      });
+    });
+  }
+
+  if (btnAddBot) {
+    btnAddBot.addEventListener('click', async () => {
+      const bName = newBotName.value.trim();
+      const bCommand = newBotCommand.value.trim();
+      
+      if (!bName || !bCommand) {
+        botErrorMsg.textContent = 'Name and command are required.';
+        botErrorMsg.style.display = 'inline';
+        return;
+      }
+      
+      if (!settings.botSnippets) settings.botSnippets = [];
+      
+      if (settings.botSnippets.length >= 5) {
+        botErrorMsg.textContent = 'Max 5 bot snippets allowed.';
+        botErrorMsg.style.display = 'inline';
+        return;
+      }
+
+      botErrorMsg.style.display = 'none';
+      const newBot = {
+        id: 'bot-' + Date.now(),
+        name: bName,
+        command: bCommand
+      };
+      
+      settings.botSnippets.push(newBot);
+      await StorageManager.updateSettings({ botSnippets: settings.botSnippets });
+      
+      newBotName.value = '';
+      newBotCommand.value = '';
+      renderBotSnippets();
+      showSaveFeedback();
+    });
+  }
 
   async function renderBlockedSubreddits() {
     if (!blockedListContainer) return;
@@ -278,7 +353,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     'postCheckEnabled', 'commentCheckEnabled',
     'allowPostCreation', 'allowCommentCreation',
     'useManualProfile',
-    'debugMode'
+    'debugMode',
+    'botSnippetsEnabled'
   ];
 
   checkboxKeys.forEach(key => {
