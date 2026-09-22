@@ -337,68 +337,71 @@ const UIManager = {
       }
     };
 
-    // 1. Inject into Feed Posts
-    document.querySelectorAll('shreddit-post').forEach(post => {
-      if (post.dataset.rsBlockBtnInjected === 'true') return;
-      
-      const subreddit = post.getAttribute('subreddit-prefixed-name');
-      if (!subreddit) return; // Promoted posts or users might not have this
+    // 1. Inject into Feed Posts & Hovercards
+    // We look for any link that looks like a subreddit link and has text like r/something
+    const subLinks = Array.from(document.querySelectorAll('a[href^="/r/"]'));
+    subLinks.forEach(link => {
+      // Don't inject twice on the same link
+      if (link.dataset.rsBlockBtnInjected === 'true') return;
 
-      const subName = subreddit.toLowerCase().replace(/^r\//, '');
+      const subNameMatch = link.getAttribute('href').match(/^\/r\/([^\/]+)\/?$/i);
+      if (!subNameMatch) return;
+      const subName = subNameMatch[1].toLowerCase();
+
+      // Ensure the link text actually contains the subreddit name (avoids injecting next to avatars or post titles)
+      const linkText = (link.innerText || '').trim().toLowerCase();
+      if (!linkText.includes(`r/${subName}`)) return;
+
+      // Ensure we aren't in the popup/sidebar or irrelevant areas
+      if (link.closest('#rs-warning-modal-host, .rs-comment-inline-guide')) return;
+
       if (blockedSubs.includes(subName)) {
-        // If it's already blocked, it will be hidden by blocker.js or the logic above, but just in case:
-        post.style.display = 'none';
+        // If it's already blocked, just hide the post if it's in a post
+        const parentPost = link.closest('shreddit-post');
+        if (parentPost) parentPost.style.display = 'none';
         return;
       }
 
-      // Find a good place to inject. The post credit bar is a good spot.
-      const creditBar = post.querySelector('[slot="credit-bar"]');
-      if (!creditBar) return;
-      
-      // Look for the subreddit link to place it next to
-      const subLink = creditBar.querySelector(`a[href^="/r/${subName}/" i]`);
-      if (subLink && !subLink.parentElement.querySelector('.rs-inline-block-btn')) {
-        const btn = document.createElement('button');
-        btn.className = 'rs-inline-block-btn';
-        btn.title = `Block r/${subName}`;
-        btn.innerText = '⛔';
-        btn.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          handleBlock(subName, btn);
-        });
-        subLink.parentElement.insertBefore(btn, subLink.nextSibling);
-        post.dataset.rsBlockBtnInjected = 'true';
-      }
+      const btn = document.createElement('button');
+      btn.className = 'rs-inline-block-btn';
+      btn.title = `Block r/${subName}`;
+      btn.innerText = '⛔';
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleBlock(subName, btn);
+      });
+
+      // Insert directly after the link
+      link.parentElement.insertBefore(btn, link.nextSibling);
+      link.dataset.rsBlockBtnInjected = 'true';
     });
 
-    // 2. Inject into Subreddit Page Header
+    // 2. Inject into Subreddit Page Header (Main H1 Title)
     const subHeader = document.querySelector('shreddit-subreddit-header');
     if (subHeader && subHeader.dataset.rsBlockBtnInjected !== 'true') {
-      // Find the subreddit name from the header title or URL
       const pathMatch = window.location.pathname.match(/^\/r\/([^\/]+)/i);
       if (pathMatch) {
         const subName = pathMatch[1].toLowerCase();
         
-        // Wait for shadowRoot to be available (sometimes it takes a moment)
-        if (subHeader.shadowRoot) {
-          const actionButtons = subHeader.shadowRoot.querySelector('.action-buttons, [slot="primary-actions"], [slot="secondary-actions"], shreddit-join-button');
-          if (actionButtons) {
-            const container = actionButtons.parentElement || actionButtons;
-            
-            const btn = document.createElement('button');
-            btn.className = 'rs-inline-block-btn header-btn';
-            btn.innerText = '⛔ Block Subreddit';
-            btn.addEventListener('click', (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleBlock(subName, btn);
-            });
-            
-            // Insert before the join button if possible
-            container.insertBefore(btn, actionButtons);
-            subHeader.dataset.rsBlockBtnInjected = 'true';
-          }
+        // Find the h1 title element (it is usually in the light DOM with slot="title", or inside shadow root)
+        const h1 = subHeader.querySelector('h1') || (subHeader.shadowRoot && subHeader.shadowRoot.querySelector('h1'));
+        if (h1) {
+          const btn = document.createElement('button');
+          btn.className = 'rs-inline-block-btn header-btn';
+          btn.innerText = '⛔ Block Subreddit';
+          btn.style.marginLeft = '12px'; // Ensure some spacing from the H1 text
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleBlock(subName, btn);
+          });
+          
+          // Append the button inside or right after the H1
+          h1.style.display = 'flex';
+          h1.style.alignItems = 'center';
+          h1.appendChild(btn);
+          subHeader.dataset.rsBlockBtnInjected = 'true';
         }
       }
     }
