@@ -48,13 +48,27 @@ Their brilliant discovery of manipulating Lit Web Component reactive properties 
 5. Select the folder containing the extension files (the root folder where `manifest.json` is located).
 6. The extension is now installed! You can pin it to your toolbar for easy access.
 
-### For Firefox
+### For Firefox Method 1
 
 1. Download or clone this repository to your computer.
 2. Open Firefox and navigate to `about:debugging#/runtime/this-firefox`.
 3. Click on the **"Load Temporary Add-on..."** button.
 4. Navigate to the extension folder and select the `manifest.json` file.
 5. The extension is now temporarily loaded and will remain active until you restart Firefox.
+
+### Firefox Method 2 (recommended)
+
+For Firefox, the recommended method for normal users is to install the **signed XPI package**.
+
+1. Download the latest signed `.xpi` file from the project's releases/files.
+2. Open Firefox.
+3. Open the downloaded `.xpi` file with Firefox.
+4. Firefox will show the extension installation prompt.
+5. Review the requested permissions.
+6. Click **Add** to install the extension.
+7. The extension will now be available in Firefox.
+
+**Recommended:** Use the signed `.xpi` method unless you are developing or testing the extension.
 
 ## Contributing
 Feel free to open issues or submit pull requests for bug fixes and feature enhancements!
