@@ -98,6 +98,7 @@ const RulePatterns = {
       titleRequirements: [],
       noLinks: false,
       selfPromotionWarning: false,
+      extractedKeywords: [],
       rawRules: lines
     };
 
@@ -176,6 +177,26 @@ const RulePatterns = {
       if (pat.test(fullText)) {
         result.selfPromotionWarning = true;
         break;
+      }
+    }
+
+    // Heuristic Keyword Extraction (Prohibited words / themes)
+    const keywordExtractors = [
+      /no\s+([a-z0-9]+)/gi,
+      /([a-z0-9]+)\s+(?:is\s+)?(?:not\s+allowed|prohibited|banned)/gi,
+      /without\s+([a-z0-9]+)/gi
+    ];
+    for (const pat of keywordExtractors) {
+      let match;
+      while ((match = pat.exec(fullText)) !== null) {
+        if (match[1] && match[1].length > 3) {
+          const kw = match[1].toLowerCase();
+          // Exclude common false positives
+          const ignoreList = ['the', 'this', 'that', 'and', 'or', 'links', 'posts', 'comments', 'images', 'videos', 'flair', 'title', 'account', 'karma'];
+          if (!ignoreList.includes(kw) && !result.extractedKeywords.includes(kw)) {
+            result.extractedKeywords.push(kw);
+          }
+        }
       }
     }
 

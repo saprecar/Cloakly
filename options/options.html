@@ -34,6 +34,14 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           Posting & Commenting
         </button>
+        <button class="nav-item" data-tab="tab-protection">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          Content Protection
+        </button>
+        <button class="nav-item" data-tab="tab-links">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+          Link Protection
+        </button>
         <button class="nav-item" data-tab="tab-cache">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
           Subreddit Rule Cache
@@ -297,6 +305,127 @@
             <button type="button" class="btn btn-action" id="btnTempCommentOpt">Enable Comment Creation (10 Minutes)</button>
           </div>
           <p class="override-status" id="overrideStatusText">No temporary overrides currently active.</p>
+        </div>
+      </section>
+
+      <!-- TAB 4: Content Protection -->
+      <section class="tab-panel" id="tab-protection">
+        <div class="card">
+          <div class="card-header">
+            <h3>Content Submission Protection</h3>
+            <p>Scan your posts and comments for sensitive information, subreddit rule violations, and custom keywords before submission.</p>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="rulesEnabled">Subreddit Rule Keyword Protection</label>
+              <span class="setting-desc">Detect keywords or patterns that violate the rules of the selected subreddit.</span>
+            </div>
+            <input type="checkbox" id="rulesEnabled" class="switch">
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="sensitiveEnabled">Sensitive Information Protection</label>
+              <span class="setting-desc">Detect potentially sensitive information (Card numbers, Aadhaar, PAN, Emails, Phone numbers).</span>
+            </div>
+            <input type="checkbox" id="sensitiveEnabled" class="switch">
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="customEnabled">Custom Keyword Protection</label>
+              <span class="setting-desc">Detect your own user-defined keywords (IDs, Internal project names).</span>
+            </div>
+            <input type="checkbox" id="customEnabled" class="switch">
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="autoRemove">Automatically Remove Detected Text</label>
+              <span class="setting-desc">If enabled, the extension will attempt to automatically remove the violating text on submission. If disabled (Warning-Only Mode), you must edit it manually.</span>
+            </div>
+            <input type="checkbox" id="autoRemove" class="switch">
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>Custom Keywords</h3>
+            <p>Define custom keywords to scan for before posting.</p>
+          </div>
+          <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+            <div class="setting-row" style="margin-bottom: 12px;">
+              <div class="setting-info">
+                <label for="newCustomKeyword">Keyword or Pattern</label>
+              </div>
+              <input type="text" id="newCustomKeyword" placeholder="e.g. ProjectX" class="text-input" style="width: 250px;">
+            </div>
+            <div class="setting-row" style="margin-bottom: 12px;">
+              <div class="setting-info">
+                <label for="newCustomExact">Match Exact Word Only</label>
+              </div>
+              <input type="checkbox" id="newCustomExact" class="switch" checked>
+            </div>
+            <div class="setting-row" style="margin-bottom: 16px;">
+              <div class="setting-info">
+                <label for="newCustomCase">Case Sensitive</label>
+              </div>
+              <input type="checkbox" id="newCustomCase" class="switch">
+            </div>
+            <button type="button" class="btn btn-action" id="btnAddCustomKeyword">Add Custom Keyword</button>
+          </div>
+
+          <h4 style="margin-top: 0; margin-bottom: 12px; font-size: 13px; color: var(--text);">Active Custom Keywords</h4>
+          <div class="cache-list" id="customKeywordsContainer">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: Link Protection -->
+      <section class="tab-panel" id="tab-links">
+        <div class="card">
+          <div class="card-header">
+            <h3>Hidden & Misleading Link Protection</h3>
+            <p>Detect and warn when a link's visible text (e.g. amazon.com) doesn't match its actual destination.</p>
+          </div>
+          
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="linkProtectionEnabled">Enable Link Protection</label>
+              <span class="setting-desc">Master switch to turn on link detection across Reddit.</span>
+            </div>
+            <input type="checkbox" id="linkProtectionEnabled" class="switch">
+          </div>
+          
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="linkWarnBeforeOpen">Warn before opening suspicious links</label>
+              <span class="setting-desc">Show a prompt allowing you to cancel or continue when you click a mismatched link.</span>
+            </div>
+            <input type="checkbox" id="linkWarnBeforeOpen" class="switch">
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="linkBlockSuspicious">Block suspicious links entirely</label>
+              <span class="setting-desc">If enabled, prevents opening the link at all (overrides warning).</span>
+            </div>
+            <input type="checkbox" id="linkBlockSuspicious" class="switch">
+          </div>
+          
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="linkHighlightSuspicious">Highlight suspicious links</label>
+              <span class="setting-desc">Visually indicate mismatched links with an icon (⚠️) in the feed.</span>
+            </div>
+            <input type="checkbox" id="linkHighlightSuspicious" class="switch">
+          </div>
+          
+          <div class="setting-row">
+            <div class="setting-info">
+              <label for="linkShowDestinationHover">Show actual destination on hover</label>
+              <span class="setting-desc">Change the tooltip of the link to show the real URL instead of the visible text.</span>
+            </div>
+            <input type="checkbox" id="linkShowDestinationHover" class="switch">
+          </div>
         </div>
       </section>
 

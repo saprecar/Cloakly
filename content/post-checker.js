@@ -168,9 +168,17 @@ const PostChecker = {
           flairSelected = true;
         }
       } else {
-        const textEl = btn.closest('form, shreddit-composer, .commentarea')?.querySelector('textarea, [contenteditable="true"]');
-        if (textEl) {
-          text = textEl.value || textEl.innerText || '';
+        const composer = btn.closest('form, shreddit-composer, .commentarea, [bundlename*="comment"]');
+        if (composer) {
+          // Attempt to find text area piercing shadow DOMs
+          const textEls = typeof RedditDetector !== 'undefined' ? RedditDetector.queryDeepAll('textarea, [contenteditable="true"], [role="textbox"]', composer) : [];
+          if (textEls.length > 0) {
+            text = textEls[0].value || textEls[0].innerText || textEls[0].textContent || '';
+          } else {
+            // Fallback just in case
+            const fallback = composer.querySelector('textarea, [contenteditable="true"]');
+            if (fallback) text = fallback.value || fallback.innerText || fallback.textContent || '';
+          }
         }
       }
 
@@ -185,21 +193,74 @@ const PostChecker = {
 
       const evaluation = RuleEngine.evaluate(accountInfo, submissionDetails, parsedRules);
 
-      if (evaluation.status === 'PASS') {
+      const fullTextToScan = `${title} ${text}`;
+      const contentMatches = (typeof ContentScanner !== 'undefined') ? ContentScanner.scan(fullTextToScan, this.settings, parsedRules) : [];
+
+      const proceedSubmit = () => {
         btn.dataset.rsApproved = 'true';
         btn.click();
-      } else {
-        UIManager.showWarningModal(
-          evaluation,
-          subreddit,
-          type,
+      };
+
+      const handleRuleEngineCheck = () => {
+        if (evaluation.status === 'PASS') {
+          proceedSubmit();
+        } else {
+          UIManager.showWarningModal(
+            evaluation,
+            subreddit,
+            type,
+            this.settings,
+            proceedSubmit,
+            () => {}
+          );
+        }
+      };
+
+      if (contentMatches.length > 0) {
+        UIManager.showContentWarningModal(
+          contentMatches,
+          fullTextToScan,
           this.settings,
-          () => {
-            btn.dataset.rsApproved = 'true';
-            btn.click();
-          },
-          () => {}
+          handleRuleEngineCheck,
+          () => {}, // cancel
+          (matches) => {
+            // Auto Remove (Best effort text replacement for simple textareas)
+            try {
+              let el = null;
+              if (type === 'post') {
+                el = document.querySelector('input[name="title"], textarea[name="title"], [name="title"]');
+              } else {
+                const composer = btn.closest('form, shreddit-composer, .commentarea, [bundlename*="comment"]');
+                if (composer) {
+                  const textEls = typeof RedditDetector !== 'undefined' ? RedditDetector.queryDeepAll('textarea, [contenteditable="true"], [role="textbox"]', composer) : [];
+                  el = textEls.length > 0 ? textEls[0] : composer.querySelector('textarea, [contenteditable="true"]');
+                }
+              }
+
+              if (el) {
+                let currentText = el.value !== undefined ? el.value : el.innerText;
+                if (currentText) {
+                  matches.forEach(m => {
+                    currentText = currentText.replace(m.text, '***');
+                  });
+                  
+                  if (el.value !== undefined) {
+                    el.value = currentText;
+                  } else {
+                    el.innerText = currentText;
+                  }
+                  el.dispatchEvent(new Event('input', { bubbles: true }));
+                  el.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+              }
+            } catch (e) {
+              Logger.log('Auto-remove failed', e);
+            }
+            handleRuleEngineCheck();
+          }
         );
+      } else {
+        handleRuleEngineCheck();
       }
     }, true); // Capture phase to intercept before Reddit's handlers
 
@@ -288,13 +349,13 @@ const PostChecker = {
 
     // Inject guide near each comment area
     areas.forEach(area => {
-      UIManager.renderCommentInlineGuide(area, subreddit, evaluation, this.settings, isCommentAllowed, accountInfo);
+      UIManager.renderCommentInlineGuide(area, subreddit, evaluation, this.settings, isCommentAllowed, accountInfo, parsedRules);
     });
 
     // If no areas found at all, inject a floating guide at the comment section
     if (areas.length === 0) {
       Logger.log('No comment areas found via selectors. Attempting broader search...');
-      this.injectFloatingGuide(subreddit, evaluation, isCommentAllowed, accountInfo);
+      this.injectFloatingGuide(subreddit, evaluation, isCommentAllowed, accountInfo, parsedRules);
     }
   },
 
@@ -302,7 +363,7 @@ const PostChecker = {
    * If we can't find any comment container, inject a floating guide
    * near the bottom of the post content as a fallback.
    */
-  injectFloatingGuide(subreddit, evaluation, isCommentAllowed, accountInfo) {
+  injectFloatingGuide(subreddit, evaluation, isCommentAllowed, accountInfo, parsedRules) {
     // Don't duplicate
     if (document.getElementById('rs-floating-comment-guide')) return;
 
@@ -311,7 +372,7 @@ const PostChecker = {
 
     const guide = document.createElement('div');
     guide.id = 'rs-floating-comment-guide';
-    UIManager.renderCommentInlineGuide(guide, subreddit, evaluation, this.settings, isCommentAllowed, accountInfo);
+    UIManager.renderCommentInlineGuide(guide, subreddit, evaluation, this.settings, isCommentAllowed, accountInfo, parsedRules);
 
     // Find a reasonable place to insert it
     const commentSection = document.querySelector('shreddit-comment-tree')

@@ -26,6 +26,24 @@ const DEFAULT_SETTINGS = {
   postFilters: [], // Array of { id, subreddit, keyword }
   blockedSubreddits: [], // Array of strings (e.g., 'news', 'gaming')
 
+  // Content Protection & Scanning
+  contentProtection: {
+    rulesEnabled: true,
+    sensitiveEnabled: true,
+    customEnabled: true,
+    autoRemove: false,
+    customKeywords: [] // Array of { word, exact, caseSensitive }
+  },
+
+  // Link Protection
+  linkProtection: {
+    enabled: true,
+    warnBeforeOpen: true,
+    blockSuspicious: false,
+    highlightSuspicious: true,
+    showDestinationHover: true
+  },
+
   // Distraction Blocking
   hideAds: false,
   hideChat: false,

@@ -25,6 +25,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       title: 'Posting & Commenting Safety',
       desc: 'Set pre-submission requirements checking and safety controls.'
     },
+    'tab-protection': {
+      title: 'Content Submission Protection',
+      desc: 'Scan your posts and comments for sensitive information, subreddit rule violations, and custom keywords before submission.'
+    },
     'tab-cache': {
       title: 'Subreddit Rule Cache',
       desc: 'Manage locally cached subreddit rule definitions.'
@@ -59,6 +63,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       } else if (tabId === 'tab-filtering') {
         renderFilters();
         renderBlockedSubreddits();
+      } else if (tabId === 'tab-protection') {
+        renderCustomKeywords();
       }
     });
   });
@@ -192,6 +198,70 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  // Custom Keywords Management
+  const customKeywordsContainer = document.getElementById('customKeywordsContainer');
+  const btnAddCustomKeyword = document.getElementById('btnAddCustomKeyword');
+  const newCustomKeyword = document.getElementById('newCustomKeyword');
+  const newCustomExact = document.getElementById('newCustomExact');
+  const newCustomCase = document.getElementById('newCustomCase');
+
+  async function renderCustomKeywords() {
+    if (!customKeywordsContainer) return;
+    const cpSettings = settings.contentProtection || {};
+    const keywords = cpSettings.customKeywords || [];
+    
+    if (keywords.length === 0) {
+      customKeywordsContainer.innerHTML = '<div class="empty-state">No custom keywords defined.</div>';
+      return;
+    }
+
+    customKeywordsContainer.innerHTML = keywords.map((k, idx) => {
+      return `
+        <div class="cache-card" style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div class="cache-sub-title">"${k.word}"</div>
+            <div class="cache-rules-preview" style="margin-top: 4px;">
+              Exact match: ${k.exact ? 'Yes' : 'No'} | Case sensitive: ${k.caseSensitive ? 'Yes' : 'No'}
+            </div>
+          </div>
+          <button class="btn btn-danger btn-delete-custom-kw" data-idx="${idx}" style="padding: 4px 8px; font-size: 11px;">Delete</button>
+        </div>
+      `;
+    }).join('');
+
+    document.querySelectorAll('.btn-delete-custom-kw').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const idx = parseInt(e.target.getAttribute('data-idx'));
+        settings.contentProtection.customKeywords.splice(idx, 1);
+        await StorageManager.updateSettings({ contentProtection: settings.contentProtection });
+        renderCustomKeywords();
+        showSaveFeedback();
+      });
+    });
+  }
+
+  if (btnAddCustomKeyword) {
+    btnAddCustomKeyword.addEventListener('click', async () => {
+      const word = newCustomKeyword.value.trim();
+      if (!word) return;
+
+      if (!settings.contentProtection) settings.contentProtection = { customKeywords: [] };
+      if (!settings.contentProtection.customKeywords) settings.contentProtection.customKeywords = [];
+
+      settings.contentProtection.customKeywords.push({
+        word: word,
+        exact: newCustomExact.checked,
+        caseSensitive: newCustomCase.checked
+      });
+
+      await StorageManager.updateSettings({ contentProtection: settings.contentProtection });
+      
+      newCustomKeyword.value = '';
+      renderCustomKeywords();
+      showSaveFeedback();
+    });
+  }
+
   // Helper to trigger save feedback toast
   function showSaveFeedback() {
     saveStatusEl.classList.add('visible');
@@ -219,6 +289,54 @@ document.addEventListener('DOMContentLoaded', async () => {
         const val = e.target.checked;
         await StorageManager.updateSettings({ [key]: val });
         settings[key] = val;
+        showSaveFeedback();
+      });
+    }
+  });
+
+  // Bind Content Protection Toggles (Nested Object)
+  const cpKeys = ['rulesEnabled', 'sensitiveEnabled', 'customEnabled', 'autoRemove'];
+  const cpSettings = settings.contentProtection || {
+    rulesEnabled: true,
+    sensitiveEnabled: true,
+    customEnabled: true,
+    autoRemove: false,
+    customKeywords: []
+  };
+
+  cpKeys.forEach(key => {
+    const el = document.getElementById(key);
+    if (el) {
+      el.checked = !!cpSettings[key];
+      el.addEventListener('change', async (e) => {
+        cpSettings[key] = e.target.checked;
+        await StorageManager.updateSettings({ contentProtection: cpSettings });
+        settings.contentProtection = cpSettings;
+        showSaveFeedback();
+      });
+    }
+  });
+
+  // Bind Link Protection Toggles (Nested Object)
+  const lpKeys = ['enabled', 'warnBeforeOpen', 'blockSuspicious', 'highlightSuspicious', 'showDestinationHover'];
+  const lpSettings = settings.linkProtection || {
+    enabled: true,
+    warnBeforeOpen: true,
+    blockSuspicious: false,
+    highlightSuspicious: true,
+    showDestinationHover: true
+  };
+
+  lpKeys.forEach(key => {
+    // Note: HTML IDs are prefixed with "link" and capitalized
+    const htmlId = 'link' + key.charAt(0).toUpperCase() + key.slice(1);
+    const el = document.getElementById(htmlId);
+    if (el) {
+      el.checked = !!lpSettings[key];
+      el.addEventListener('change', async (e) => {
+        lpSettings[key] = e.target.checked;
+        await StorageManager.updateSettings({ linkProtection: lpSettings });
+        settings.linkProtection = lpSettings;
         showSaveFeedback();
       });
     }

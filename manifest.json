@@ -17,7 +17,11 @@
   ],
   "host_permissions": [
     "*://*.reddit.com/*",
-    "*://reddit.com/*"
+    "*://reddit.com/*",
+    "*://*.reddittorjg6rue252oqsxryoxengawnmo46qy4kyii5wtqnwfj4ooad.onion/*",
+    "*://reddittorjg6rue252oqsxryoxengawnmo46qy4kyii5wtqnwfj4ooad.onion/*",
+    "*://*.reddittorjg6rue252oqsxryoxengawnmo46pou4wvlizvi5ywpuzzzid.onion/*",
+    "*://reddittorjg6rue252oqsxryoxengawnmo46pou4wvlizvi5ywpuzzzid.onion/*"
   ],
   "background": {
     "scripts": [
@@ -38,7 +42,11 @@
     {
       "matches": [
         "*://*.reddit.com/*",
-        "*://reddit.com/*"
+        "*://reddit.com/*",
+        "*://*.reddittorjg6rue252oqsxryoxengawnmo46qy4kyii5wtqnwfj4ooad.onion/*",
+        "*://reddittorjg6rue252oqsxryoxengawnmo46qy4kyii5wtqnwfj4ooad.onion/*",
+        "*://*.reddittorjg6rue252oqsxryoxengawnmo46pou4wvlizvi5ywpuzzzid.onion/*",
+        "*://reddittorjg6rue252oqsxryoxengawnmo46pou4wvlizvi5ywpuzzzid.onion/*"
       ],
       "js": [
         "content/blocker.js"
@@ -48,7 +56,11 @@
     {
       "matches": [
         "*://*.reddit.com/*",
-        "*://reddit.com/*"
+        "*://reddit.com/*",
+        "*://*.reddittorjg6rue252oqsxryoxengawnmo46qy4kyii5wtqnwfj4ooad.onion/*",
+        "*://reddittorjg6rue252oqsxryoxengawnmo46qy4kyii5wtqnwfj4ooad.onion/*",
+        "*://*.reddittorjg6rue252oqsxryoxengawnmo46pou4wvlizvi5ywpuzzzid.onion/*",
+        "*://reddittorjg6rue252oqsxryoxengawnmo46pou4wvlizvi5ywpuzzzid.onion/*"
       ],
       "css": [
         "styles/blur.css",
@@ -66,7 +78,9 @@
         "content/ui.js",
         "content/blur.js",
         "content/filter.js",
+        "content/scanner.js",
         "content/post-checker.js",
+        "content/link-scanner.js",
         "content/reddit.js"
       ],
       "run_at": "document_idle"
@@ -74,8 +88,17 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["content/auto-reveal.js"],
-      "matches": ["*://*.reddit.com/*", "*://reddit.com/*"]
+      "resources": [
+        "content/auto-reveal.js"
+      ],
+      "matches": [
+        "*://*.reddit.com/*",
+        "*://reddit.com/*",
+        "*://*.reddittorjg6rue252oqsxryoxengawnmo46qy4kyii5wtqnwfj4ooad.onion/*",
+        "*://reddittorjg6rue252oqsxryoxengawnmo46qy4kyii5wtqnwfj4ooad.onion/*",
+        "*://*.reddittorjg6rue252oqsxryoxengawnmo46pou4wvlizvi5ywpuzzzid.onion/*",
+        "*://reddittorjg6rue252oqsxryoxengawnmo46pou4wvlizvi5ywpuzzzid.onion/*"
+      ]
     }
   ],
   "action": {

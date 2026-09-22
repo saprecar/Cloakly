@@ -146,6 +146,129 @@ const UIManager = {
   },
 
   /**
+   * Shows a pre-submission warning modal for content matches (Sensitive info, keywords, rules).
+   * 
+   * @param {Array} matches - Array of match objects from ContentScanner
+   * @param {string} originalText - The original text that was scanned
+   * @param {Object} settings - User extension settings
+   * @param {Function} onProceed - Callback if user clicks "Submit Anyway"
+   * @param {Function} onCancel - Callback if user clicks "Go Back"
+   * @param {Function} onAutoRemove - Callback to attempt automatic removal of detected text
+   */
+  showContentWarningModal(matches, originalText, settings, onProceed, onCancel, onAutoRemove) {
+    const existing = document.getElementById('rs-content-warning-host');
+    if (existing) existing.remove();
+
+    const host = document.createElement('div');
+    host.id = 'rs-content-warning-host';
+    const shadow = host.attachShadow({ mode: 'open' });
+
+    const styleEl = document.createElement('style');
+    styleEl.textContent = `
+      .rs-modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(10, 14, 23, 0.85); backdrop-filter: blur(4px);
+        z-index: 2147483647; display: flex; align-items: center; justify-content: center;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        color: #e2e8f0;
+      }
+      .rs-modal-card {
+        background: #1a202c; border: 1px solid #2d3748; border-radius: 12px;
+        width: 92%; max-width: 600px; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
+        box-sizing: border-box;
+      }
+      .rs-modal-header {
+        display: flex; align-items: center; justify-content: space-between;
+        border-bottom: 1px solid #2d3748; padding-bottom: 12px; margin-bottom: 16px;
+      }
+      .rs-modal-title { font-size: 18px; font-weight: 700; color: #f7fafc; display: flex; align-items: center; gap: 8px; }
+      .rs-badge-danger { background: #e53e3e; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 700; }
+      .rs-matches-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; max-height: 200px; overflow-y: auto; }
+      .rs-match-item { background: #2d3748; border-radius: 8px; padding: 12px; border-left: 4px solid #dd6b20; }
+      .rs-match-item.sensitive { border-left-color: #e53e3e; }
+      .rs-match-item.rule { border-left-color: #d69e2e; }
+      .rs-match-item.custom { border-left-color: #805ad5; }
+      .rs-match-title { font-weight: 600; font-size: 14px; color: #edf2f7; margin-bottom: 6px; }
+      .rs-match-text { background: #1a202c; padding: 6px 10px; border-radius: 4px; font-family: monospace; font-size: 13px; color: #fc8181; display: inline-block; word-break: break-all; }
+      .rs-disclaimer { background: #2a4365; border-radius: 6px; padding: 10px 12px; font-size: 12px; color: #bee3f8; margin-bottom: 18px; line-height: 1.4; }
+      .rs-actions { display: flex; justify-content: flex-end; gap: 10px; }
+      .rs-btn { padding: 9px 16px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; border: none; }
+      .rs-btn-back { background: #4a5568; color: #edf2f7; }
+      .rs-btn-back:hover { background: #718096; }
+      .rs-btn-remove { background: #d69e2e; color: #1a202c; }
+      .rs-btn-remove:hover { background: #ecc94b; }
+      .rs-btn-proceed { background: transparent; border: 1px solid #4a5568; color: #a0aec0; }
+      .rs-btn-proceed:hover { background: #2d3748; color: #cbd5e0; }
+    `;
+    shadow.appendChild(styleEl);
+
+    const matchesHtml = matches.map(m => {
+      let itemClass = 'custom';
+      if (m.category === 'SENSITIVE') itemClass = 'sensitive';
+      else if (m.category === 'RULE') itemClass = 'rule';
+
+      return `
+        <div class="rs-match-item ${itemClass}">
+          <div class="rs-match-title">${this.escapeHtml(m.reason)}</div>
+          <div class="rs-match-text">${this.escapeHtml(m.text)}</div>
+        </div>
+      `;
+    }).join('');
+
+    const cpSettings = settings.contentProtection || {};
+    const autoRemoveEnabled = !!cpSettings.autoRemove;
+
+    const modalContent = document.createElement('div');
+    modalContent.className = 'rs-modal-overlay';
+    modalContent.innerHTML = `
+      <div class="rs-modal-card">
+        <div class="rs-modal-header">
+          <div class="rs-modal-title">
+            <span>CONTENT PROTECTION ALERT</span>
+            <span class="rs-badge-danger">${matches.length} ISSUE(S) DETECTED</span>
+          </div>
+        </div>
+
+        <div class="rs-matches-list">
+          ${matchesHtml}
+        </div>
+
+        <div class="rs-disclaimer">
+          <strong>Notice:</strong> We detected potentially sensitive information or restricted keywords in your text. Please review your content before posting to protect your privacy and comply with rules.
+        </div>
+
+        <div class="rs-actions">
+          <button type="button" class="rs-btn rs-btn-proceed" id="rs-btn-proceed">Submit Anyway</button>
+          ${autoRemoveEnabled ? `<button type="button" class="rs-btn rs-btn-remove" id="rs-btn-remove">Remove Matches & Submit</button>` : ''}
+          <button type="button" class="rs-btn rs-btn-back" id="rs-btn-cancel">Go Back & Edit</button>
+        </div>
+      </div>
+    `;
+
+    shadow.appendChild(modalContent);
+
+    shadow.getElementById('rs-btn-cancel').addEventListener('click', () => {
+      host.remove();
+      if (onCancel) onCancel();
+    });
+
+    shadow.getElementById('rs-btn-proceed').addEventListener('click', () => {
+      host.remove();
+      if (onProceed) onProceed();
+    });
+
+    const btnRemove = shadow.getElementById('rs-btn-remove');
+    if (btnRemove) {
+      btnRemove.addEventListener('click', () => {
+        host.remove();
+        if (onAutoRemove) onAutoRemove(matches);
+      });
+    }
+
+    document.body.appendChild(host);
+  },
+
+  /**
    * Renders an inline banner showing that creation is currently disabled by user configuration.
    */
   injectDisabledBanner(targetContainer, type) {
@@ -170,7 +293,7 @@ const UIManager = {
    * adjacent to a comment box. We inject as a SIBLING (after the container)
    * because Reddit's shreddit-composer uses closed Shadow DOM.
    */
-  renderCommentInlineGuide(container, subreddit, evaluation, settings, isCommentAllowed, accountInfo) {
+  renderCommentInlineGuide(container, subreddit, evaluation, settings, isCommentAllowed, accountInfo, parsedRules) {
     if (!container) return;
 
     // 1. Clean up any orphaned inline guides globally
@@ -274,7 +397,10 @@ const UIManager = {
       guide.innerHTML = `
         <div class="rs-inline-header">
           <span class="rs-inline-title" style="color:#fde047;">⚠️ ${subName} Comment Guidance</span>
-          <span class="rs-inline-badge warning">Review Guidelines</span>
+          <div>
+            <button type="button" class="rs-inline-btn rs-btn-analyze" style="background:#4a5568; margin-right:8px; padding:2px 8px; font-size:11px;">🔍 Guideline Check</button>
+            <span class="rs-inline-badge warning">Review Guidelines</span>
+          </div>
         </div>
         <div class="rs-inline-details">
           ${evaluation.summary || 'Potential rule conflicts or community requirements detected.'}
@@ -287,13 +413,79 @@ const UIManager = {
       guide.innerHTML = `
         <div class="rs-inline-header">
           <span class="rs-inline-title">🛡️ ${subName} Comment Safety</span>
-          <span class="rs-inline-badge pass">✓ Ready to Submit</span>
+          <div>
+            <button type="button" class="rs-inline-btn rs-btn-analyze" style="background:#4a5568; margin-right:8px; padding:2px 8px; font-size:11px;">🔍 Guideline Check</button>
+            <span class="rs-inline-badge pass">✓ Ready to Submit</span>
+          </div>
         </div>
         <div class="rs-inline-details">
           Safety check active • Verify comments adhere to ${subName} community guidelines.
           ${statsString}
         </div>
       `;
+    }
+
+    const analyzeBtn = guide.querySelector('.rs-btn-analyze');
+    if (analyzeBtn && !analyzeBtn.dataset.rsListening) {
+      analyzeBtn.dataset.rsListening = 'true';
+      analyzeBtn.addEventListener('click', () => {
+        // Find nearest text box
+        const composer = guide.previousElementSibling;
+        let text = '';
+        let textEl = null;
+
+        if (composer) {
+          const textEls = typeof RedditDetector !== 'undefined' ? RedditDetector.queryDeepAll('textarea, [contenteditable="true"], [role="textbox"]', composer) : [];
+          textEl = textEls.length > 0 ? textEls[0] : composer.querySelector('textarea, [contenteditable="true"]');
+          if (textEl) {
+            text = textEl.value || textEl.innerText || textEl.textContent || '';
+          }
+        }
+
+        const fullTextToScan = text;
+        const contentMatches = (typeof ContentScanner !== 'undefined') ? ContentScanner.scan(fullTextToScan, settings, parsedRules) : [];
+
+        if (contentMatches.length > 0) {
+          UIManager.showContentWarningModal(
+            contentMatches,
+            fullTextToScan,
+            settings,
+            () => {}, // Just close
+            () => {}, // cancel
+            (matches) => {
+              // Auto Remove
+              try {
+                if (textEl) {
+                  let currentText = textEl.value !== undefined ? textEl.value : textEl.innerText;
+                  if (currentText) {
+                    matches.forEach(m => {
+                      currentText = currentText.replace(m.text, '***');
+                    });
+                    if (textEl.value !== undefined) {
+                      textEl.value = currentText;
+                    } else {
+                      textEl.innerText = currentText;
+                    }
+                    textEl.dispatchEvent(new Event('input', { bubbles: true }));
+                    textEl.dispatchEvent(new Event('change', { bubbles: true }));
+                  }
+                }
+              } catch (e) {
+                Logger.log('Auto-remove failed', e);
+              }
+            }
+          );
+        } else {
+          analyzeBtn.innerText = '✅ All Good!';
+          analyzeBtn.style.background = '#38a169';
+          setTimeout(() => {
+            if (analyzeBtn) {
+              analyzeBtn.innerText = '🔍 Guideline Check';
+              analyzeBtn.style.background = '#4a5568';
+            }
+          }, 3000);
+        }
+      });
     }
   },
 
@@ -332,7 +524,7 @@ const UIManager = {
 
       // If we are currently ON the subreddit page, redirect to home
       if (window.location.pathname.toLowerCase().startsWith(`/r/${sub}/`)) {
-        window.location.replace('https://www.reddit.com/?rs_blocked=sub');
+        window.location.replace('/?rs_blocked=sub');
       }
     };
 

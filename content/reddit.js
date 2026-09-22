@@ -341,6 +341,7 @@
     currentSettings = await StorageManager.getSettings();
     document.documentElement.dataset.rsAutoReveal = currentSettings.autoRevealNative ? 'true' : 'false';
     PostChecker.updateSettings(currentSettings);
+    if (typeof LinkScanner !== 'undefined') LinkScanner.updateSettings(currentSettings);
     runScan();
   });
 
