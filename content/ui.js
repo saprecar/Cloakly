@@ -432,6 +432,84 @@ const UIManager = {
     }
   },
 
+  /**
+   * Scans for other users' names and injects stats badges if data is cached.
+   * Returns a list of usernames that need their data fetched.
+   */
+  injectUserStats(settings, userStatsCache) {
+    if (!settings || !settings.showOtherUserStats) return [];
+    
+    const neededUsers = new Set();
+    const allLinks = Array.from(document.querySelectorAll('a[href*="/user/"], a[href*="/u/"]'));
+    
+    // Check shadow DOMs
+    document.querySelectorAll('shreddit-post, shreddit-comment').forEach(el => {
+      if (el.shadowRoot) {
+        allLinks.push(...el.shadowRoot.querySelectorAll('a[href*="/user/"], a[href*="/u/"]'));
+      }
+    });
+
+    const myUsername = (settings.lastDetectedUser && settings.lastDetectedUser.username) ? settings.lastDetectedUser.username.toLowerCase() : '';
+
+    allLinks.forEach(link => {
+      if (link.dataset.rsUserStatsInjected === 'true') return;
+
+      const href = link.getAttribute('href');
+      const match = href.match(/\/(?:user|u)\/([a-zA-Z0-9_\-]+)\/?/i);
+      if (!match) return;
+
+      const username = match[1];
+      if (!username || username.toLowerCase() === myUsername) return; // Don't badge yourself
+      
+      // Ignore some common system routes
+      if (['me', 'login', 'signup', 'submit', 'avatar'].includes(username.toLowerCase())) return;
+
+      const cached = userStatsCache.get(username.toLowerCase());
+      if (cached === undefined) {
+        // Not fetched yet
+        neededUsers.add(username);
+        return;
+      }
+      
+      if (cached === null) {
+        // Fetched but failed/not found, mark as injected so we don't keep retrying
+        link.dataset.rsUserStatsInjected = 'true';
+        return;
+      }
+
+      // We have data! Let's inject it.
+      const badge = document.createElement('span');
+      badge.className = 'rs-user-stats-badge';
+      
+      const parts = [];
+      if (settings.showOtherUserAge && cached.accountAgeDays !== null) {
+        const years = Math.floor(cached.accountAgeDays / 365);
+        const days = cached.accountAgeDays % 365;
+        parts.push(years > 0 ? `${years}y` : `${days}d`);
+      }
+      if (settings.showOtherUserKarma && cached.combinedKarma !== null) {
+        const k = cached.combinedKarma;
+        parts.push(k > 999 ? (k/1000).toFixed(1) + 'k' : k);
+      }
+      
+      if (parts.length > 0) {
+        badge.innerText = ` (${parts.join(' | ')})`;
+        badge.style.fontSize = '0.85em';
+        badge.style.opacity = '0.7';
+        badge.style.marginLeft = '4px';
+        badge.style.fontWeight = 'normal';
+        badge.style.pointerEvents = 'none';
+        
+        // Append inside the link so it inherits the text flow naturally
+        link.appendChild(badge);
+      }
+      
+      link.dataset.rsUserStatsInjected = 'true';
+    });
+    
+    return Array.from(neededUsers);
+  },
+
   escapeHtml(str) {
     if (!str) return '';
     return String(str)

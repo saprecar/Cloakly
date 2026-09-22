@@ -205,13 +205,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     'commentCheckEnabled',
     'hideAds',
     'hideChat',
-    'hideNotifications'
+    'hideNotifications',
+    'showOtherUserStats',
+    'showOtherUserKarma',
+    'showOtherUserAge'
   ];
 
   checkboxes.forEach(id => {
     const el = document.getElementById(id);
     if (el) {
       el.checked = !!settings[id];
+
+      if (id === 'showOtherUserStats') {
+        const karmaToggle = document.getElementById('showOtherUserKarma');
+        const ageToggle = document.getElementById('showOtherUserAge');
+        if (karmaToggle) karmaToggle.disabled = !el.checked;
+        if (ageToggle) ageToggle.disabled = !el.checked;
+      }
+
       el.addEventListener('change', async (e) => {
         // Enforce mutual exclusivity
         if (id === 'autoRevealNative' && el.checked) {
@@ -226,6 +237,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         syncBlurToggles();
         await StorageManager.updateSettings({ [id]: e.target.checked });
+
+        if (id === 'showOtherUserStats') {
+          const karmaToggle = document.getElementById('showOtherUserKarma');
+          const ageToggle = document.getElementById('showOtherUserAge');
+          if (karmaToggle) karmaToggle.disabled = !e.target.checked;
+          if (ageToggle) ageToggle.disabled = !e.target.checked;
+        }
       });
     }
   });

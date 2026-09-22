@@ -31,6 +31,11 @@ const DEFAULT_SETTINGS = {
   hideChat: false,
   hideNotifications: false,
 
+  // Inline Other User Stats
+  showOtherUserStats: false,
+  showOtherUserKarma: true,
+  showOtherUserAge: true,
+
   // Manual Profile Overrides (for reliable checker testing/usage)
   useManualProfile: false,
   manualUsername: '',

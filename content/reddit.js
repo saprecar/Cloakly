@@ -11,6 +11,36 @@
   document.documentElement.dataset.rsAutoReveal = currentSettings.autoRevealNative ? 'true' : 'false';
 
   // Run initial scan & checks
+  const userStatsCache = new Map();
+  const userStatsQueue = new Set();
+  let isFetchingUserStats = false;
+
+  async function processUserStatsQueue() {
+    if (isFetchingUserStats || userStatsQueue.size === 0) return;
+    isFetchingUserStats = true;
+    
+    for (const username of Array.from(userStatsQueue)) {
+      if (userStatsCache.has(username)) {
+        userStatsQueue.delete(username);
+        continue;
+      }
+      
+      const stats = await RedditDetector.fetchOtherUserStats(username);
+      userStatsCache.set(username, stats); // stats is either object or null if failed
+      userStatsQueue.delete(username);
+      
+      // Trigger a re-injection if data was successfully fetched
+      if (stats !== null) {
+        runScan();
+      }
+      
+      // Sleep slightly to avoid aggressive rate limiting
+      await new Promise(resolve => setTimeout(resolve, 300));
+    }
+    
+    isFetchingUserStats = false;
+  }
+
   function runScan() {
     if (typeof FilterManager !== 'undefined') FilterManager.scanAndApply(currentSettings);
     BlurManager.scanAndApply(currentSettings);
@@ -125,6 +155,15 @@
     // Inject inline block buttons
     if (typeof UIManager !== 'undefined' && UIManager.injectInlineBlockButtons) {
       UIManager.injectInlineBlockButtons(currentSettings);
+    }
+
+    // Inject other user stats
+    if (typeof UIManager !== 'undefined' && UIManager.injectUserStats) {
+      const needed = UIManager.injectUserStats(currentSettings, userStatsCache);
+      if (needed && needed.length > 0) {
+        needed.forEach(u => userStatsQueue.add(u));
+        processUserStatsQueue();
+      }
     }
   }
 

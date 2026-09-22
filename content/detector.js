@@ -454,6 +454,30 @@ const RedditDetector = {
   },
 
   /**
+   * Dedicated fetcher for any other user's stats by username
+   * Used for the Inline User Stats feature.
+   * @param {string} username 
+   * @returns {Promise<Object|null>}
+   */
+  async fetchOtherUserStats(username) {
+    if (!username) return null;
+    try {
+      const url = `https://www.reddit.com/user/${encodeURIComponent(username)}/about.json`;
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      if (res.ok) {
+        const json = await res.json();
+        const parsed = this.parseRedditUserData(json);
+        if (parsed && parsed.accountAgeDays !== null) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      Logger.warn(`Failed to fetch stats for u/${username}:`, e);
+    }
+    return null;
+  },
+
+  /**
    * Extracts rule texts from current subreddit sidebar DOM elements.
    * Tries many selector strategies since Reddit's DOM changes frequently.
    */
